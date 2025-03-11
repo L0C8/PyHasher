@@ -1,17 +1,35 @@
 import tkinter as tk
+import os
 from tkinter import ttk
-from Cipher import str_2_md5, str_2_sha1, str_2_sha256  # Import hashing functions
+from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256 
 
 def hash_text(event=None):  
+    
     text = input_box.get()
-    if selected_hash.get() == "MD5":
-        hashed = str_2_md5(text)
-    elif selected_hash.get() == "SHA-1":
-        hashed = str_2_sha1(text)
-    elif selected_hash.get() == "SHA-256":
-        hashed = str_2_sha256(text)
-    else:
-        hashed = "Error: Select a hash type"
+     
+    if file_mode.get():
+        if not os.path.isfile(text):
+            output_box.delete(0, tk.END)
+            output_box.insert(0, "Error: File not found.")
+            return
+
+        if selected_hash.get() == "MD5":
+            hashed = file_2_md5(text)
+        elif selected_hash.get() == "SHA-1":
+            hashed = file_2_sha1(text)
+        elif selected_hash.get() == "SHA-256":
+            hashed = file_2_sha256(text)
+        else:
+            hashed = "Error: Select a hash type"
+    else:         
+        if selected_hash.get() == "MD5":
+            hashed = str_2_md5(text)
+        elif selected_hash.get() == "SHA-1":
+            hashed = str_2_sha1(text)
+        elif selected_hash.get() == "SHA-256":
+            hashed = str_2_sha256(text)
+        else:
+            hashed = "Error: Select a hash type"
 
     output_box.delete(0, tk.END)
     output_box.insert(0, hashed)
@@ -41,6 +59,10 @@ radio_frame.pack(pady=5)
 ttk.Radiobutton(radio_frame, text="MD5", variable=selected_hash, value="MD5").pack(side="left", padx=5)
 ttk.Radiobutton(radio_frame, text="SHA-1", variable=selected_hash, value="SHA-1").pack(side="left", padx=5)
 ttk.Radiobutton(radio_frame, text="SHA-256", variable=selected_hash, value="SHA-256").pack(side="left", padx=5)
+
+file_mode = tk.BooleanVar(value=False)  # Checkbox state (False by default)
+file_checkbox = ttk.Checkbutton(tab1, text="File", variable=file_mode)
+file_checkbox.pack(pady=5)
 
 input_box = ttk.Entry(tab1, width=50)
 input_box.pack(pady=5)
