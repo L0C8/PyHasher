@@ -1,15 +1,5 @@
-from Cipher import str_2_md5, file_2_md5
+from Cipher import str_2_md5, str_2_sha256, str_2_sha1, file_2_md5, file_2_sha1, file_2_sha256, AESCipher
+import subprocess
 
-
-# test 1 
-
-str = input("Add String: ")
-print(str)
-hash_result = str_2_md5(str)
-print(f"MD5 Hash of '{str}': {hash_result}")
-
-# test 2
-
-file_path = "README.md"  
-hash_result = file_2_md5(file_path)
-print(f"MD5 Hash of '{file_path}': {hash_result}")
+# Open Gui.py
+subprocess.run(["python3", "Gui.py"])

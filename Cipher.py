@@ -3,6 +3,8 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import hashlib, cryptography, base64, os
 
+# Hash 
+
 def str_2_md5(text):
     md5_hash = hashlib.md5()
     md5_hash.update(text.encode('utf-8'))  
@@ -20,6 +22,46 @@ def file_2_md5(file_path):
         return "Error: File not found."
     except Exception as e:
         return f"Error: {e}"
+    
+def str_2_sha256(text):
+    sha256_hash = hashlib.sha256(text.encode()).hexdigest()
+    return sha256_hash
+
+def str_2_sha1(text):
+    sha1_hash = hashlib.sha1(text.encode()).hexdigest()
+    return sha1_hash
+
+def file_2_sha256(file_path):
+    sha256_hash = hashlib.sha256()
+
+    try:
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):  # Read in 4KB chunks
+                sha256_hash.update(chunk)
+        
+        return sha256_hash.hexdigest()
+    
+    except FileNotFoundError:
+        return "Error: File not found.", "Error: File not found."
+    except Exception as e:
+        return f"Error: {e}", f"Error: {e}"
+
+def file_2_sha1(file_path):
+    sha1_hash = hashlib.sha1()
+
+    try:
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):  # Read in 4KB chunks
+                sha1_hash.update(chunk)
+        
+        return sha1_hash.hexdigest()
+    
+    except FileNotFoundError:
+        return "Error: File not found.", "Error: File not found."
+    except Exception as e:
+        return f"Error: {e}", f"Error: {e}"
+    
+#AES Cipher 
 
 class AESCipher:
     def __init__(self, key):
