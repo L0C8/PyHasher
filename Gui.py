@@ -55,12 +55,12 @@ notebook.add(tab2, text="Cipher")
 
 # ----- functions -----
 
-def copy_to_clipboard():
+def copy_hash_to_clipboard():
     root.clipboard_clear()
     root.clipboard_append(output_box.get())
     root.update()
 
-def browse_file():
+def browse_hash_file():
     file_path = filedialog.askopenfilename(title="Select a File")
     if file_path:
         input_box.delete(0, "end")  # Clear previous input
@@ -129,7 +129,7 @@ file_checkbox.place(x=11, y=80)
 file_button = customtkinter.CTkButton(
     master=tab1, 
     text="Browse", 
-    command=browse_file, 
+    command=browse_hash_file, 
     width=80
 )
 file_button.place(x=80, y=80)
@@ -173,7 +173,7 @@ output_box.pack(side="left", padx=5)
 copy_button = customtkinter.CTkButton(
     master=output_frame, 
     text="Copy", 
-    command=copy_to_clipboard, 
+    command=copy_hash_to_clipboard, 
     width=80
     )
 
@@ -181,7 +181,7 @@ copy_button.pack(side="left")
 
 # ----- Tab 2 -----
 
-Cipher_Label_KeyInput = customtkinter.CTkLabel(
+cipher_label_keyinput = customtkinter.CTkLabel(
     master=tab2,
     text="Key:",
     font=("Arial", 14),
@@ -189,14 +189,14 @@ Cipher_Label_KeyInput = customtkinter.CTkLabel(
     corner_radius=0
     )
 
-Cipher_Label_KeyInput.place(x=10, y=10)
+cipher_label_keyinput.place(x=10, y=10)
 
-set_cipher_button = customtkinter.CTkButton(
+cipher_button_keyinput = customtkinter.CTkButton(
     master=tab2, 
     text="Set", 
     width=80
 )
-set_cipher_button.place(x=320, y=10)
+cipher_button_keyinput.place(x=320, y=10)
 
 cipher_key_box = customtkinter.CTkEntry(
     master=tab2, 
@@ -205,65 +205,65 @@ cipher_key_box = customtkinter.CTkEntry(
 )
 cipher_key_box.place(x=50, y=10)
 
-input_label = customtkinter.CTkLabel(
+cipher_input_label = customtkinter.CTkLabel(
     master=tab2,
     text="Input:",
     font=("Arial", 12),
     text_color="#000000"
 )
-input_label.place(x=10, y=50)
+cipher_input_label.place(x=10, y=50)
 
-input_text = scrolledtext.ScrolledText(
+cipher_input_text = scrolledtext.ScrolledText(
     master=tab2, 
     width=50, 
     height=2, 
     wrap="word"
 )
-input_text.place(x=10, y=70)
+cipher_input_text.place(x=10, y=70)
 
-output_label = customtkinter.CTkLabel(
+cipher_output_label = customtkinter.CTkLabel(
     master=tab2,
     text="Output:",
     font=("Arial", 12),
     text_color="#000000"
 )
-output_label.place(x=10, y=110)
+cipher_output_label.place(x=10, y=110)
 
-output_text = scrolledtext.ScrolledText(
+cipher_output_text = scrolledtext.ScrolledText(
     master=tab2, 
     width=50, 
     height=2, 
     wrap="word"
 )
-output_text.place(x=10, y=130)
+cipher_output_text.place(x=10, y=130)
 
-translate_cipher_button = customtkinter.CTkButton(
+cipher_translate_button = customtkinter.CTkButton(
     master=tab2, 
     text="Translate", 
     width=80
 )
-translate_cipher_button.place(x=10, y=180)
+cipher_translate_button.place(x=10, y=180)
 
-swap_cipher_button = customtkinter.CTkButton(
+cipher_swap_button = customtkinter.CTkButton(
     master=tab2, 
     text="Swap", 
     width=80
 )
-swap_cipher_button.place(x=100, y=180)
+cipher_swap_button.place(x=100, y=180)
 
-copy_cipher_button = customtkinter.CTkButton(
+cipher_copy_button = customtkinter.CTkButton(
     master=tab2, 
     text="Copy", 
     width=80
 )
-copy_cipher_button.place(x=190, y=180)
+cipher_copy_button.place(x=190, y=180)
 
-clear_cipher_button = customtkinter.CTkButton(
+cipher_clear_button = customtkinter.CTkButton(
     master=tab2, 
     text="Clear", 
     width=80
 )
-clear_cipher_button.place(x=280, y=180)
+cipher_clear_button.place(x=280, y=180)
 
 input_box.bind("<Return>", hash_text)  
 
