@@ -1,6 +1,6 @@
 import tkinter as tk
 import os, customtkinter
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, scrolledtext
 from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256 
 
 
@@ -183,14 +183,87 @@ copy_button.pack(side="left")
 
 Cipher_Label_KeyInput = customtkinter.CTkLabel(
     master=tab2,
-    text="Key",
+    text="Key:",
     font=("Arial", 14),
     text_color="#000000",
-    height=30,
-    width=95,
     corner_radius=0
     )
-Cipher_Label_KeyInput.place(x=0, y=0)
+
+Cipher_Label_KeyInput.place(x=10, y=10)
+
+set_cipher_button = customtkinter.CTkButton(
+    master=tab2, 
+    text="Set", 
+    width=80
+)
+set_cipher_button.place(x=320, y=10)
+
+cipher_key_box = customtkinter.CTkEntry(
+    master=tab2, 
+    width=256, 
+    text_color="#000000"
+)
+cipher_key_box.place(x=50, y=10)
+
+input_label = customtkinter.CTkLabel(
+    master=tab2,
+    text="Input:",
+    font=("Arial", 12),
+    text_color="#000000"
+)
+input_label.place(x=10, y=50)
+
+input_text = scrolledtext.ScrolledText(
+    master=tab2, 
+    width=50, 
+    height=2, 
+    wrap="word"
+)
+input_text.place(x=10, y=70)
+
+output_label = customtkinter.CTkLabel(
+    master=tab2,
+    text="Output:",
+    font=("Arial", 12),
+    text_color="#000000"
+)
+output_label.place(x=10, y=110)
+
+output_text = scrolledtext.ScrolledText(
+    master=tab2, 
+    width=50, 
+    height=2, 
+    wrap="word"
+)
+output_text.place(x=10, y=130)
+
+translate_cipher_button = customtkinter.CTkButton(
+    master=tab2, 
+    text="Translate", 
+    width=80
+)
+translate_cipher_button.place(x=10, y=180)
+
+swap_cipher_button = customtkinter.CTkButton(
+    master=tab2, 
+    text="Swap", 
+    width=80
+)
+swap_cipher_button.place(x=100, y=180)
+
+copy_cipher_button = customtkinter.CTkButton(
+    master=tab2, 
+    text="Copy", 
+    width=80
+)
+copy_cipher_button.place(x=190, y=180)
+
+clear_cipher_button = customtkinter.CTkButton(
+    master=tab2, 
+    text="Clear", 
+    width=80
+)
+clear_cipher_button.place(x=280, y=180)
 
 input_box.bind("<Return>", hash_text)  
 
