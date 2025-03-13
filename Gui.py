@@ -57,7 +57,10 @@ notebook.add(tab2, text="Cipher")
 
 selected_hash = tk.StringVar(value="MD5")  
 
-radio_frame = customtkinter.CTkFrame(master=tab1)
+radio_frame = customtkinter.CTkFrame(
+    master=tab1,
+    fg_color="transparent"
+    )
 radio_frame.place(x=128, y=8)
 
 Hash_Label_KeyInput = customtkinter.CTkLabel(
@@ -70,7 +73,12 @@ Hash_Label_KeyInput = customtkinter.CTkLabel(
     corner_radius=0
     )
 
-Hash_Label_KeyInput.place(x=0, y=0)
+Hash_Label_KeyInput.place(x=10, y=10)
+
+radio_frame = customtkinter.CTkFrame(
+    master=tab1, 
+    fg_color="transparent")
+radio_frame.place(x=10, y=40)
 
 customtkinter.CTkRadioButton(
     radio_frame, 
@@ -88,7 +96,7 @@ customtkinter.CTkRadioButton(
     ).pack(side="left", padx=5)
 customtkinter.CTkRadioButton(
     radio_frame, 
-    text="SHA-256", 
+    text="SHA-256",     
     variable=selected_hash, 
     value="SHA-256",
     text_color="#000000"
@@ -102,29 +110,37 @@ file_checkbox = customtkinter.CTkCheckBox(
     variable=file_mode
     )
 
-file_checkbox.place(x=48, y=48)
+file_checkbox.place(x=10, y=80)
+
+input_frame = customtkinter.CTkFrame(
+    master=tab1, 
+    fg_color="transparent"
+    )
+input_frame.place(x=10, y=110)
 
 input_box = customtkinter.CTkEntry(
-    master=tab1, 
-    width=300,
+    master=input_frame, 
+    width=240, 
     text_color="#000000"
     )
-input_box.pack(pady=5)
+input_box.pack(side="left", padx=5)
 input_box.bind("<Return>", hash_text)
 
 hash_button = customtkinter.CTkButton(
-    master=tab1, 
+    master=input_frame, 
     text="Hash", 
-    command=hash_text
+    command=hash_text, 
+    width=80
     )
-hash_button.pack(pady=5)
+hash_button.pack(side="left")
 
 output_box = customtkinter.CTkEntry(
     master=tab1, 
-    width=300, 
+    width=330, 
+    text_color="#000000", 
     state="normal"
-    )
-output_box.pack(pady=5)
+)
+output_box.place(x=14, y=150)
 
 # ----- Tab 2 -----
 
