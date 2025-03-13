@@ -1,10 +1,56 @@
+import os, customtkinter, random
 import tkinter as tk
-import os, customtkinter
 from tkinter import ttk, filedialog, scrolledtext
-from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256 
-
+from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256, AESCipher
 
 # ----- Cipher Functions -----
+aes_cipher = None
+
+def set_cipher_key():
+    global aes_cipher
+    key = cipher_key_box.get().encode() 
+
+    if not key:
+        print("Error: Key cannot be empty.")
+        return
+
+    if len(key) not in (16, 24, 32):
+        print("Error: Key must be 16, 24, or 32 bytes long.\n")
+        print(len(key))
+        return
+    
+    aes_cipher = AESCipher(key) 
+    print("AES Cipher Instance Created Successfully!")
+
+def set_random_cipher_key():
+    global aes_cipher
+    key_length = random.choice([8, 12, 16]) 
+    random_key = os.urandom(key_length)
+
+    cipher_key_box.delete(0, "end")
+    cipher_key_box.insert(0, random_key.hex())
+
+    aes_cipher = AESCipher(random_key)
+    print(f"Random AES Key Set: {random_key.hex()}")
+
+def encrypt_text():
+    global aes_cipher
+    if aes_cipher is None:
+        print("Error: No AES key set. Please set a key first.")
+        return
+
+    text = cipher_input_text.get("1.0", "end-1c")
+    if not text.strip():
+        print("Error: No text to encrypt.")
+        return
+
+    try:
+        encrypted_text = aes_cipher.encrypt(text)
+        cipher_output_text.delete("1.0", "end")
+        cipher_output_text.insert("1.0", encrypted_text) 
+        print("Text encrypted successfully.")
+    except Exception as e:
+        print(f"Encryption failed: {e}")
 
 # ----- Hash Functions ----- 
 def hash_text(event=None):  
@@ -38,6 +84,17 @@ def hash_text(event=None):
     hash_output_box.delete(0, tk.END)
     hash_output_box.insert(0, hashed)
 
+def copy_hash_to_clipboard():
+    root.clipboard_clear()
+    root.clipboard_append(hash_output_box.get())
+    root.update()
+
+def browse_hash_file():
+    file_path = filedialog.askopenfilename(title="Select a File")
+    if file_path:
+        hash_input_box.delete(0, "end")  
+        hash_input_box.insert(0, file_path) 
+
 # ----- Gui -----
 root = tk.Tk()
 root.title("PyHasher")
@@ -52,19 +109,6 @@ tab2 = ttk.Frame(notebook)
 
 notebook.add(tab1, text="Hasher")
 notebook.add(tab2, text="Cipher")
-
-# ----- functions -----
-
-def copy_hash_to_clipboard():
-    root.clipboard_clear()
-    root.clipboard_append(hash_output_box.get())
-    root.update()
-
-def browse_hash_file():
-    file_path = filedialog.askopenfilename(title="Select a File")
-    if file_path:
-        hash_input_box.delete(0, "end")  # Clear previous input
-        hash_input_box.insert(0, file_path)  # Insert selected file path
 
 # ----- Tab 1 -----
 
@@ -194,9 +238,18 @@ cipher_label_keyinput.place(x=10, y=10)
 cipher_button_keyinput = customtkinter.CTkButton(
     master=tab2, 
     text="Set", 
-    width=80
+    command=set_cipher_key,
+    width=40
 )
 cipher_button_keyinput.place(x=320, y=10)
+
+cipher_button_keyinput = customtkinter.CTkButton(
+    master=tab2, 
+    text="Random", 
+    command=set_random_cipher_key,
+    width=80
+)
+cipher_button_keyinput.place(x=370, y=10)
 
 cipher_key_box = customtkinter.CTkEntry(
     master=tab2, 
@@ -240,6 +293,7 @@ cipher_output_text.place(x=10, y=130)
 cipher_translate_button = customtkinter.CTkButton(
     master=tab2, 
     text="Translate", 
+    command=encrypt_text,
     width=80
 )
 cipher_translate_button.place(x=10, y=180)
