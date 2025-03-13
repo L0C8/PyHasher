@@ -1,6 +1,6 @@
 import tkinter as tk
 import os, customtkinter
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256 
 
 
@@ -53,6 +53,19 @@ tab2 = ttk.Frame(notebook)
 notebook.add(tab1, text="Hasher")
 notebook.add(tab2, text="Cipher")
 
+# ----- functions -----
+
+def copy_to_clipboard():
+    root.clipboard_clear()
+    root.clipboard_append(output_box.get())
+    root.update()
+
+def browse_file():
+    file_path = filedialog.askopenfilename(title="Select a File")
+    if file_path:
+        input_box.delete(0, "end")  # Clear previous input
+        input_box.insert(0, file_path)  # Insert selected file path
+
 # ----- Tab 1 -----
 
 selected_hash = tk.StringVar(value="MD5")  
@@ -103,6 +116,7 @@ customtkinter.CTkRadioButton(
     ).pack(side="left", padx=5)
 
 file_mode = tk.BooleanVar(value=False)
+
 file_checkbox = customtkinter.CTkCheckBox(
     master=tab1, 
     text="File", 
@@ -110,7 +124,15 @@ file_checkbox = customtkinter.CTkCheckBox(
     variable=file_mode
     )
 
-file_checkbox.place(x=10, y=80)
+file_checkbox.place(x=11, y=80)
+
+file_button = customtkinter.CTkButton(
+    master=tab1, 
+    text="Browse", 
+    command=browse_file, 
+    width=80
+)
+file_button.place(x=80, y=80)
 
 input_frame = customtkinter.CTkFrame(
     master=tab1, 
@@ -134,13 +156,28 @@ hash_button = customtkinter.CTkButton(
     )
 hash_button.pack(side="left")
 
-output_box = customtkinter.CTkEntry(
+output_frame = customtkinter.CTkFrame(
     master=tab1, 
-    width=330, 
-    text_color="#000000", 
-    state="normal"
-)
-output_box.place(x=14, y=150)
+    fg_color="transparent"
+    )
+output_frame.place(x=10, y=150)
+
+output_box = customtkinter.CTkEntry(
+    master=output_frame, 
+    width=240, 
+    text_color="#000000"
+    )
+
+output_box.pack(side="left", padx=5)
+
+copy_button = customtkinter.CTkButton(
+    master=output_frame, 
+    text="Copy", 
+    command=copy_to_clipboard, 
+    width=80
+    )
+
+copy_button.pack(side="left")
 
 # ----- Tab 2 -----
 
@@ -154,8 +191,7 @@ Cipher_Label_KeyInput = customtkinter.CTkLabel(
     corner_radius=0
     )
 Cipher_Label_KeyInput.place(x=0, y=0)
-# input_box = ttk.Entry(tab2, width=50)
-# input_box.pack(pady=5)
+
 input_box.bind("<Return>", hash_text)  
 
 root.mainloop()
