@@ -91,6 +91,16 @@ def swap_text_mode():
 
     print(f"Mode switched: {'Plaintext -> Ciphertext' if is_plaintext else 'Ciphertext -> Plaintext'}")
 
+def clear_textfield():
+    cipher_input_text.delete("1.0", "end")
+    cipher_output_text.delete("1.0", "end")
+
+def copy_textfield():
+    text = cipher_output_text.get("1.0", "end-1c") 
+    if text.strip(): 
+        root.clipboard_clear()
+        root.clipboard_append(text)
+        root.update()
 
 # ----- Hash Functions ----- 
 def hash_text(event=None):  
@@ -349,6 +359,7 @@ cipher_swap_button.place(x=100, y=180)
 cipher_copy_button = customtkinter.CTkButton(
     master=tab2, 
     text="Copy", 
+    command=copy_textfield,
     width=80
 )
 cipher_copy_button.place(x=190, y=180)
@@ -356,6 +367,7 @@ cipher_copy_button.place(x=190, y=180)
 cipher_clear_button = customtkinter.CTkButton(
     master=tab2, 
     text="Clear", 
+    command=clear_textfield,
     width=80
 )
 cipher_clear_button.place(x=280, y=180)
