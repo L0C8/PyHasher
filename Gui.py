@@ -5,6 +5,7 @@ from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1,
 
 # ----- Cipher Functions -----
 aes_cipher = None
+is_plaintext = True
 
 def set_cipher_key():
     global aes_cipher
@@ -45,12 +46,51 @@ def encrypt_text():
         return
 
     try:
+        if(is_plaintext):
+            encrypted_text = aes_cipher.encrypt(text)
+            cipher_output_text.delete("1.0", "end")
+            cipher_output_text.insert("1.0", encrypted_text) 
+            print("Text encrypted successfully.")
+        else:
+            decrypted_text = aes_cipher.decrypt(text)
+            cipher_output_text.delete("1.0", "end")
+            cipher_output_text.insert("1.0", decrypted_text) 
+            print("Text encrypted successfully.")
+    except Exception as e:
+        print(f"Encryption failed: {e}")
+
+def decrypt_text():
+    global aes_cipher
+    if aes_cipher is None:
+        print("Error: No AES key set. Please set a key first.")
+        return
+    text = cipher_input_text.get("1.0", "end-1c")
+    
+    if not text.strip():
+        print("Error: No text to encrypt.")
+        return
+
+    try:
         encrypted_text = aes_cipher.encrypt(text)
         cipher_output_text.delete("1.0", "end")
         cipher_output_text.insert("1.0", encrypted_text) 
         print("Text encrypted successfully.")
     except Exception as e:
         print(f"Encryption failed: {e}")
+    
+def swap_text_mode():
+    global is_plaintext
+    is_plaintext = not is_plaintext  
+
+    if is_plaintext:
+        cipher_input_label.configure(text="Input (Plaintext):")
+        cipher_output_label.configure(text="Output (Ciphertext):")
+    else:
+        cipher_input_label.configure(text="Input (Ciphertext):")
+        cipher_output_label.configure(text="Output (Plaintext):")
+
+    print(f"Mode switched: {'Plaintext -> Ciphertext' if is_plaintext else 'Ciphertext -> Plaintext'}")
+
 
 # ----- Hash Functions ----- 
 def hash_text(event=None):  
@@ -260,7 +300,7 @@ cipher_key_box.place(x=50, y=10)
 
 cipher_input_label = customtkinter.CTkLabel(
     master=tab2,
-    text="Input:",
+    text="Input (Plaintext):",
     font=("Arial", 12),
     text_color="#000000"
 )
@@ -276,7 +316,7 @@ cipher_input_text.place(x=10, y=70)
 
 cipher_output_label = customtkinter.CTkLabel(
     master=tab2,
-    text="Output:",
+    text="Output (Ciphertext):",
     font=("Arial", 12),
     text_color="#000000"
 )
@@ -301,6 +341,7 @@ cipher_translate_button.place(x=10, y=180)
 cipher_swap_button = customtkinter.CTkButton(
     master=tab2, 
     text="Swap", 
+    command=swap_text_mode,
     width=80
 )
 cipher_swap_button.place(x=100, y=180)
