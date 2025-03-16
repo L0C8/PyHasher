@@ -148,7 +148,7 @@ def browse_hash_file():
 # ----- Gui -----
 root = tk.Tk()
 root.title("PyHasher")
-root.geometry("480x256")
+root.geometry("480x300")
 root.resizable(0, 0)
 
 notebook = ttk.Notebook(root)
@@ -283,7 +283,7 @@ cipher_label_keyinput = customtkinter.CTkLabel(
     corner_radius=0
     )
 
-cipher_label_keyinput.place(x=10, y=10)
+cipher_label_keyinput.place(x=10, y=50)
 
 cipher_button_keyinput = customtkinter.CTkButton(
     master=tab2, 
@@ -291,7 +291,7 @@ cipher_button_keyinput = customtkinter.CTkButton(
     command=set_cipher_key,
     width=40
 )
-cipher_button_keyinput.place(x=320, y=10)
+cipher_button_keyinput.place(x=320, y=50)
 
 cipher_button_keyinput = customtkinter.CTkButton(
     master=tab2, 
@@ -299,14 +299,14 @@ cipher_button_keyinput = customtkinter.CTkButton(
     command=set_random_cipher_key,
     width=80
 )
-cipher_button_keyinput.place(x=370, y=10)
+cipher_button_keyinput.place(x=370, y=50)
 
 cipher_key_box = customtkinter.CTkEntry(
     master=tab2, 
     width=256, 
     text_color="#000000"
 )
-cipher_key_box.place(x=50, y=10)
+cipher_key_box.place(x=50, y=50)
 
 cipher_input_label = customtkinter.CTkLabel(
     master=tab2,
@@ -314,7 +314,7 @@ cipher_input_label = customtkinter.CTkLabel(
     font=("Arial", 12),
     text_color="#000000"
 )
-cipher_input_label.place(x=10, y=50)
+cipher_input_label.place(x=10, y=90)
 
 cipher_input_text = scrolledtext.ScrolledText(
     master=tab2, 
@@ -322,7 +322,7 @@ cipher_input_text = scrolledtext.ScrolledText(
     height=2, 
     wrap="word"
 )
-cipher_input_text.place(x=10, y=70)
+cipher_input_text.place(x=10, y=110)
 
 cipher_output_label = customtkinter.CTkLabel(
     master=tab2,
@@ -330,7 +330,7 @@ cipher_output_label = customtkinter.CTkLabel(
     font=("Arial", 12),
     text_color="#000000"
 )
-cipher_output_label.place(x=10, y=110)
+cipher_output_label.place(x=10, y=170)
 
 cipher_output_text = scrolledtext.ScrolledText(
     master=tab2, 
@@ -338,7 +338,7 @@ cipher_output_text = scrolledtext.ScrolledText(
     height=2, 
     wrap="word"
 )
-cipher_output_text.place(x=10, y=130)
+cipher_output_text.place(x=10, y=190)
 
 cipher_translate_button = customtkinter.CTkButton(
     master=tab2, 
@@ -346,7 +346,7 @@ cipher_translate_button = customtkinter.CTkButton(
     command=encrypt_text,
     width=80
 )
-cipher_translate_button.place(x=10, y=180)
+cipher_translate_button.place(x=10, y=240)
 
 cipher_swap_button = customtkinter.CTkButton(
     master=tab2, 
@@ -354,7 +354,7 @@ cipher_swap_button = customtkinter.CTkButton(
     command=swap_text_mode,
     width=80
 )
-cipher_swap_button.place(x=100, y=180)
+cipher_swap_button.place(x=100, y=240)
 
 cipher_copy_button = customtkinter.CTkButton(
     master=tab2, 
@@ -362,7 +362,7 @@ cipher_copy_button = customtkinter.CTkButton(
     command=copy_textfield,
     width=80
 )
-cipher_copy_button.place(x=190, y=180)
+cipher_copy_button.place(x=190, y=240)
 
 cipher_clear_button = customtkinter.CTkButton(
     master=tab2, 
@@ -370,7 +370,26 @@ cipher_clear_button = customtkinter.CTkButton(
     command=clear_textfield,
     width=80
 )
-cipher_clear_button.place(x=280, y=180)
+cipher_clear_button.place(x=280, y=240)
+
+cipher_mode = tk.StringVar(value="AES") 
+
+cipher_mode_label = customtkinter.CTkLabel(
+    master=tab2,
+    text="Type:",
+    font=("Arial", 14),
+    text_color="#000000",
+    corner_radius=0
+    )
+
+cipher_mode_label.place(x=10, y=10) 
+
+cipher_mode_dropdown = customtkinter.CTkComboBox(
+    master=tab2,
+    values=["AES", "AES (Password)", "AES (Password+)"],
+    variable=cipher_mode
+)
+cipher_mode_dropdown.place(x=60, y=10) 
 
 hash_input_box.bind("<Return>", hash_text)  
 
