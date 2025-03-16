@@ -1,82 +1,92 @@
 import os, customtkinter, random
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext
-from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256, AESCipher
+from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256, AESCipher, AESCipherPass
 
 # ----- Cipher Functions -----
 aes_cipher = None
+aes_cipher_pass = None
 is_plaintext = True
 
 def set_cipher_key():
-    global aes_cipher
-    key = cipher_key_box.get().encode() 
+    global aes_cipher, aes_cipher_pass
+    key_text = cipher_key_box.get().strip()
 
-    if not key:
+    if not key_text:
         print("Error: Key cannot be empty.")
         return
 
-    if len(key) not in (16, 24, 32):
-        print("Error: Key must be 16, 24, or 32 bytes long.\n")
-        print(len(key))
-        return
-    
-    aes_cipher = AESCipher(key) 
-    print("AES Cipher Instance Created Successfully!")
+    selected_mode = cipher_mode.get()
 
-def set_random_cipher_key():
-    global aes_cipher
-    key_length = random.choice([8, 12, 16]) 
-    random_key = os.urandom(key_length)
+    if selected_mode == "AES":
+        key = key_text.encode()
+        if len(key) not in (16, 24, 32):
+            print("Error: Key must be 16, 24, or 32 bytes long.\n")
+            return
+        aes_cipher = AESCipher(key)
+        print("AES Cipher Instance Created Successfully!")
+
+    elif selected_mode == "AES (PKCS7)":
+        aes_cipher_pass = AESCipherPass(key_text)
+        print("AES (PKCS7) CipherPass Instance Created Successfully!")
+
+def update_cipher_mode():
+    selected_mode = cipher_mode.get()
+
+    if selected_mode == "AES":
+        cipher_label_keyinput.configure(text="Key:")
+    elif selected_mode == "AES (PKCS7)":
+        cipher_label_keyinput.configure(text="Pass:")
 
     cipher_key_box.delete(0, "end")
-    cipher_key_box.insert(0, random_key.hex())
-
-    aes_cipher = AESCipher(random_key)
-    print(f"Random AES Key Set: {random_key.hex()}")
 
 def encrypt_text():
-    global aes_cipher
-    if aes_cipher is None:
-        print("Error: No AES key set. Please set a key first.")
-        return
+    global aes_cipher, aes_cipher_pass
+    text = cipher_input_text.get("1.0", "end-1c").strip()
 
-    text = cipher_input_text.get("1.0", "end-1c")
-    if not text.strip():
+    if not text:
         print("Error: No text to encrypt.")
         return
 
+    selected_mode = cipher_mode.get()
+
     try:
-        if(is_plaintext):
-            encrypted_text = aes_cipher.encrypt(text)
-            cipher_output_text.delete("1.0", "end")
-            cipher_output_text.insert("1.0", encrypted_text) 
-            print("Text encrypted successfully.")
+        if selected_mode == "AES" and aes_cipher:
+            processed_text = aes_cipher.encrypt(text)
+        elif selected_mode == "AES (PKCS7)" and aes_cipher_pass:
+            processed_text = aes_cipher_pass.encrypt(text)
         else:
-            decrypted_text = aes_cipher.decrypt(text)
-            cipher_output_text.delete("1.0", "end")
-            cipher_output_text.insert("1.0", decrypted_text) 
-            print("Text encrypted successfully.")
+            processed_text = "Error: No valid cipher instance set."
+
+        cipher_output_text.delete("1.0", "end")
+        cipher_output_text.insert("1.0", processed_text)
+        print(f"Processed text using mode: {selected_mode}")
     except Exception as e:
         print(f"Encryption failed: {e}")
 
 def decrypt_text():
-    global aes_cipher
-    if aes_cipher is None:
-        print("Error: No AES key set. Please set a key first.")
-        return
-    text = cipher_input_text.get("1.0", "end-1c")
-    
-    if not text.strip():
-        print("Error: No text to encrypt.")
+    global aes_cipher, aes_cipher_pass
+    text = cipher_input_text.get("1.0", "end-1c").strip()
+
+    if not text:
+        print("Error: No text to decrypt.")
         return
 
+    selected_mode = cipher_mode.get()
+
     try:
-        encrypted_text = aes_cipher.encrypt(text)
+        if selected_mode == "AES" and aes_cipher:
+            processed_text = aes_cipher.decrypt(text)
+        elif selected_mode == "AES (PKCS7)" and aes_cipher_pass:
+            processed_text = aes_cipher_pass.decrypt(text)
+        else:
+            processed_text = "Error: No valid cipher instance set."
+
         cipher_output_text.delete("1.0", "end")
-        cipher_output_text.insert("1.0", encrypted_text) 
-        print("Text encrypted successfully.")
+        cipher_output_text.insert("1.0", processed_text)
+        print(f"Processed text using mode: {selected_mode}")
     except Exception as e:
-        print(f"Encryption failed: {e}")
+        print(f"Decryption failed: {e}")
     
 def swap_text_mode():
     global is_plaintext
@@ -90,6 +100,18 @@ def swap_text_mode():
         cipher_output_label.configure(text="Output (Plaintext):")
 
     print(f"Mode switched: {'Plaintext -> Ciphertext' if is_plaintext else 'Ciphertext -> Plaintext'}")
+
+def set_random_cipher_key():
+    global aes_cipher
+    key_length = random.choice([8, 12, 16]) 
+    random_key = os.urandom(key_length)
+
+    cipher_key_box.delete(0, "end")
+    cipher_key_box.insert(0, random_key.hex())
+
+    aes_cipher = AESCipher(random_key)
+    print(f"Random AES Key Set: {random_key.hex()}")
+
 
 def clear_textfield():
     cipher_input_text.delete("1.0", "end")
@@ -340,21 +362,40 @@ cipher_output_text = scrolledtext.ScrolledText(
 )
 cipher_output_text.place(x=10, y=190)
 
-cipher_translate_button = customtkinter.CTkButton(
+cipher_mode = tk.StringVar(value="AES")  
+
+cipher_mode_label = customtkinter.CTkLabel(
+    master=tab2,
+    text="Type:",
+    font=("Arial", 14),
+    text_color="#000000"
+)
+cipher_mode_label.place(x=10, y=10)
+
+cipher_mode_dropdown = customtkinter.CTkComboBox(
+    master=tab2,
+    values=["AES", "AES (PKCS7)"],
+    variable=cipher_mode,
+    state="readonly",
+    command=lambda _: update_cipher_mode()
+)
+cipher_mode_dropdown.place(x=60, y=10)
+
+cipher_encrypt_button = customtkinter.CTkButton(
     master=tab2, 
-    text="Translate", 
+    text="Encrypt", 
     command=encrypt_text,
     width=80
 )
-cipher_translate_button.place(x=10, y=240)
+cipher_encrypt_button.place(x=10, y=240)
 
-cipher_swap_button = customtkinter.CTkButton(
+cipher_decrypt_button = customtkinter.CTkButton(
     master=tab2, 
-    text="Swap", 
-    command=swap_text_mode,
+    text="Decrypt", 
+    command=decrypt_text,
     width=80
 )
-cipher_swap_button.place(x=100, y=240)
+cipher_decrypt_button.place(x=100, y=240)
 
 cipher_copy_button = customtkinter.CTkButton(
     master=tab2, 
@@ -372,24 +413,6 @@ cipher_clear_button = customtkinter.CTkButton(
 )
 cipher_clear_button.place(x=280, y=240)
 
-cipher_mode = tk.StringVar(value="AES") 
-
-cipher_mode_label = customtkinter.CTkLabel(
-    master=tab2,
-    text="Type:",
-    font=("Arial", 14),
-    text_color="#000000",
-    corner_radius=0
-    )
-
-cipher_mode_label.place(x=10, y=10) 
-
-cipher_mode_dropdown = customtkinter.CTkComboBox(
-    master=tab2,
-    values=["AES", "AES (PKCS7)"],
-    variable=cipher_mode
-)
-cipher_mode_dropdown.place(x=60, y=10) 
 
 hash_input_box.bind("<Return>", hash_text)  
 
