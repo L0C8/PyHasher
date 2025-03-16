@@ -1,7 +1,8 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
-import hashlib, cryptography, base64, os
+import hashlib, base64, os
+
 
 # Hash 
 
@@ -94,3 +95,37 @@ class AESCipher:
         decrypted_data = unpadder.update(decrypted_padded) + unpadder.finalize()
 
         return decrypted_data.decode()
+
+class AESCipherPass:
+    def __init__(self, password):
+        self.key = self.set_key(password)
+        self.backend = default_backend()
+
+    def set_key(self, password):
+        sha1 = hashlib.sha1(password.encode())
+        key = sha1.digest()[:16]
+        return key
+
+    def encrypt(self, plaintext):
+        cipher = Cipher(algorithms.AES(self.key), modes.ECB(), backend=self.backend)
+        encryptor = cipher.encryptor()
+
+        padder = padding.PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(plaintext.encode()) + padder.finalize()
+
+        ciphertext = encryptor.update(padded_data) + encryptor.finalize()
+        return base64.b64encode(ciphertext).decode() 
+
+    def decrypt(self, ciphertext):
+        try:
+            encrypted_data = base64.b64decode(ciphertext)
+            cipher = Cipher(algorithms.AES(self.key), modes.ECB(), backend=self.backend)
+            decryptor = cipher.decryptor()
+
+            decrypted_padded = decryptor.update(encrypted_data) + decryptor.finalize()
+            unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+            decrypted_data = unpadder.update(decrypted_padded) + unpadder.finalize()
+
+            return decrypted_data.decode()
+        except Exception as e:
+            return f"Error decrypting: {e}"

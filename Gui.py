@@ -386,7 +386,7 @@ cipher_mode_label.place(x=10, y=10)
 
 cipher_mode_dropdown = customtkinter.CTkComboBox(
     master=tab2,
-    values=["AES", "AES (Password)", "AES (Password+)"],
+    values=["AES", "AES (PKCS7)"],
     variable=cipher_mode
 )
 cipher_mode_dropdown.place(x=60, y=10) 
