@@ -1,82 +1,93 @@
 import os, customtkinter, random
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext
-from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256, AESCipher
+from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256, AESCipher, AESCipherPass
+import string, random
 
 # ----- Cipher Functions -----
 aes_cipher = None
+aes_cipher_pass = None
 is_plaintext = True
 
 def set_cipher_key():
-    global aes_cipher
-    key = cipher_key_box.get().encode() 
+    global aes_cipher, aes_cipher_pass
+    key_text = cipher_key_box.get().strip()
 
-    if not key:
+    if not key_text:
         print("Error: Key cannot be empty.")
         return
 
-    if len(key) not in (16, 24, 32):
-        print("Error: Key must be 16, 24, or 32 bytes long.\n")
-        print(len(key))
-        return
-    
-    aes_cipher = AESCipher(key) 
-    print("AES Cipher Instance Created Successfully!")
+    selected_mode = cipher_mode.get()
 
-def set_random_cipher_key():
-    global aes_cipher
-    key_length = random.choice([8, 12, 16]) 
-    random_key = os.urandom(key_length)
+    if selected_mode == "AES":
+        key = key_text.encode()
+        if len(key) not in (16, 24, 32):
+            print("Error: Key must be 16, 24, or 32 bytes long.\n")
+            return
+        aes_cipher = AESCipher(key)
+        print("AES Cipher Instance Created Successfully!")
+
+    elif selected_mode == "AES (PKCS7)":
+        aes_cipher_pass = AESCipherPass(key_text)
+        print("AES (PKCS7) CipherPass Instance Created Successfully!")
+
+def update_cipher_mode():
+    selected_mode = cipher_mode.get()
+
+    if selected_mode == "AES":
+        cipher_label_keyinput.configure(text="Key:")
+    elif selected_mode == "AES (PKCS7)":
+        cipher_label_keyinput.configure(text="Pass:")
 
     cipher_key_box.delete(0, "end")
-    cipher_key_box.insert(0, random_key.hex())
-
-    aes_cipher = AESCipher(random_key)
-    print(f"Random AES Key Set: {random_key.hex()}")
 
 def encrypt_text():
-    global aes_cipher
-    if aes_cipher is None:
-        print("Error: No AES key set. Please set a key first.")
-        return
+    global aes_cipher, aes_cipher_pass
+    text = cipher_input_text.get("1.0", "end-1c").strip()
 
-    text = cipher_input_text.get("1.0", "end-1c")
-    if not text.strip():
+    if not text:
         print("Error: No text to encrypt.")
         return
 
+    selected_mode = cipher_mode.get()
+
     try:
-        if(is_plaintext):
-            encrypted_text = aes_cipher.encrypt(text)
-            cipher_output_text.delete("1.0", "end")
-            cipher_output_text.insert("1.0", encrypted_text) 
-            print("Text encrypted successfully.")
+        if selected_mode == "AES" and aes_cipher:
+            processed_text = aes_cipher.encrypt(text)
+        elif selected_mode == "AES (PKCS7)" and aes_cipher_pass:
+            processed_text = aes_cipher_pass.encrypt(text)
         else:
-            decrypted_text = aes_cipher.decrypt(text)
-            cipher_output_text.delete("1.0", "end")
-            cipher_output_text.insert("1.0", decrypted_text) 
-            print("Text encrypted successfully.")
+            processed_text = "Error: No valid cipher instance set."
+
+        cipher_output_text.delete("1.0", "end")
+        cipher_output_text.insert("1.0", processed_text)
+        print(f"Processed text using mode: {selected_mode}")
     except Exception as e:
         print(f"Encryption failed: {e}")
 
 def decrypt_text():
-    global aes_cipher
-    if aes_cipher is None:
-        print("Error: No AES key set. Please set a key first.")
-        return
-    text = cipher_input_text.get("1.0", "end-1c")
-    
-    if not text.strip():
-        print("Error: No text to encrypt.")
+    global aes_cipher, aes_cipher_pass
+    text = cipher_input_text.get("1.0", "end-1c").strip()
+
+    if not text:
+        print("Error: No text to decrypt.")
         return
 
+    selected_mode = cipher_mode.get()
+
     try:
-        encrypted_text = aes_cipher.encrypt(text)
+        if selected_mode == "AES" and aes_cipher:
+            processed_text = aes_cipher.decrypt(text)
+        elif selected_mode == "AES (PKCS7)" and aes_cipher_pass:
+            processed_text = aes_cipher_pass.decrypt(text)
+        else:
+            processed_text = "Error: No valid cipher instance set."
+
         cipher_output_text.delete("1.0", "end")
-        cipher_output_text.insert("1.0", encrypted_text) 
-        print("Text encrypted successfully.")
+        cipher_output_text.insert("1.0", processed_text)
+        print(f"Processed text using mode: {selected_mode}")
     except Exception as e:
-        print(f"Encryption failed: {e}")
+        print(f"Decryption failed: {e}")
     
 def swap_text_mode():
     global is_plaintext
@@ -90,6 +101,18 @@ def swap_text_mode():
         cipher_output_label.configure(text="Output (Plaintext):")
 
     print(f"Mode switched: {'Plaintext -> Ciphertext' if is_plaintext else 'Ciphertext -> Plaintext'}")
+
+def set_random_cipher_key():
+    global aes_cipher
+    key_length = random.choice([8, 12, 16]) 
+    random_key = os.urandom(key_length)
+
+    cipher_key_box.delete(0, "end")
+    cipher_key_box.insert(0, random_key.hex())
+
+    aes_cipher = AESCipher(random_key)
+    print(f"Random AES Key Set: {random_key.hex()}")
+
 
 def clear_textfield():
     cipher_input_text.delete("1.0", "end")
@@ -145,10 +168,33 @@ def browse_hash_file():
         hash_input_box.delete(0, "end")  
         hash_input_box.insert(0, file_path) 
 
+# ----- Password Generator Function -----
+def generate_password():
+    length = int(password_length_spinbox.get()) 
+
+    char_sets = []
+    if use_chars.get():
+        char_sets.append(string.ascii_letters) 
+    if use_numbers.get():
+        char_sets.append(string.digits)  
+    if use_special.get():
+        char_sets.append(string.punctuation) 
+
+    if not char_sets:
+        password_output_box.delete(0, "end")
+        password_output_box.insert(0, "Error: Select at least one option!")
+        return
+
+    all_chars = "".join(char_sets)
+    password = "".join(random.choice(all_chars) for _ in range(length))
+
+    password_output_box.delete(0, "end")
+    password_output_box.insert(0, password)
+
 # ----- Gui -----
 root = tk.Tk()
 root.title("PyHasher")
-root.geometry("480x256")
+root.geometry("480x300")
 root.resizable(0, 0)
 
 notebook = ttk.Notebook(root)
@@ -156,9 +202,11 @@ notebook.pack(expand=True, fill="both")
 
 tab1 = ttk.Frame(notebook)
 tab2 = ttk.Frame(notebook)
+tab3 = ttk.Frame(notebook)
 
 notebook.add(tab1, text="Hasher")
 notebook.add(tab2, text="Cipher")
+notebook.add(tab3, text="Password")
 
 # ----- Tab 1 -----
 
@@ -283,7 +331,7 @@ cipher_label_keyinput = customtkinter.CTkLabel(
     corner_radius=0
     )
 
-cipher_label_keyinput.place(x=10, y=10)
+cipher_label_keyinput.place(x=10, y=50)
 
 cipher_button_keyinput = customtkinter.CTkButton(
     master=tab2, 
@@ -291,7 +339,7 @@ cipher_button_keyinput = customtkinter.CTkButton(
     command=set_cipher_key,
     width=40
 )
-cipher_button_keyinput.place(x=320, y=10)
+cipher_button_keyinput.place(x=320, y=50)
 
 cipher_button_keyinput = customtkinter.CTkButton(
     master=tab2, 
@@ -299,14 +347,14 @@ cipher_button_keyinput = customtkinter.CTkButton(
     command=set_random_cipher_key,
     width=80
 )
-cipher_button_keyinput.place(x=370, y=10)
+cipher_button_keyinput.place(x=370, y=50)
 
 cipher_key_box = customtkinter.CTkEntry(
     master=tab2, 
     width=256, 
     text_color="#000000"
 )
-cipher_key_box.place(x=50, y=10)
+cipher_key_box.place(x=50, y=50)
 
 cipher_input_label = customtkinter.CTkLabel(
     master=tab2,
@@ -314,7 +362,7 @@ cipher_input_label = customtkinter.CTkLabel(
     font=("Arial", 12),
     text_color="#000000"
 )
-cipher_input_label.place(x=10, y=50)
+cipher_input_label.place(x=10, y=90)
 
 cipher_input_text = scrolledtext.ScrolledText(
     master=tab2, 
@@ -322,7 +370,7 @@ cipher_input_text = scrolledtext.ScrolledText(
     height=2, 
     wrap="word"
 )
-cipher_input_text.place(x=10, y=70)
+cipher_input_text.place(x=10, y=110)
 
 cipher_output_label = customtkinter.CTkLabel(
     master=tab2,
@@ -330,7 +378,7 @@ cipher_output_label = customtkinter.CTkLabel(
     font=("Arial", 12),
     text_color="#000000"
 )
-cipher_output_label.place(x=10, y=110)
+cipher_output_label.place(x=10, y=170)
 
 cipher_output_text = scrolledtext.ScrolledText(
     master=tab2, 
@@ -338,23 +386,42 @@ cipher_output_text = scrolledtext.ScrolledText(
     height=2, 
     wrap="word"
 )
-cipher_output_text.place(x=10, y=130)
+cipher_output_text.place(x=10, y=190)
 
-cipher_translate_button = customtkinter.CTkButton(
+cipher_mode = tk.StringVar(value="AES")  
+
+cipher_mode_label = customtkinter.CTkLabel(
+    master=tab2,
+    text="Type:",
+    font=("Arial", 14),
+    text_color="#000000"
+)
+cipher_mode_label.place(x=10, y=10)
+
+cipher_mode_dropdown = customtkinter.CTkComboBox(
+    master=tab2,
+    values=["AES", "AES (PKCS7)"],
+    variable=cipher_mode,
+    state="readonly",
+    command=lambda _: update_cipher_mode()
+)
+cipher_mode_dropdown.place(x=60, y=10)
+
+cipher_encrypt_button = customtkinter.CTkButton(
     master=tab2, 
-    text="Translate", 
+    text="Encrypt", 
     command=encrypt_text,
     width=80
 )
-cipher_translate_button.place(x=10, y=180)
+cipher_encrypt_button.place(x=10, y=240)
 
-cipher_swap_button = customtkinter.CTkButton(
+cipher_decrypt_button = customtkinter.CTkButton(
     master=tab2, 
-    text="Swap", 
-    command=swap_text_mode,
+    text="Decrypt", 
+    command=decrypt_text,
     width=80
 )
-cipher_swap_button.place(x=100, y=180)
+cipher_decrypt_button.place(x=100, y=240)
 
 cipher_copy_button = customtkinter.CTkButton(
     master=tab2, 
@@ -362,7 +429,7 @@ cipher_copy_button = customtkinter.CTkButton(
     command=copy_textfield,
     width=80
 )
-cipher_copy_button.place(x=190, y=180)
+cipher_copy_button.place(x=190, y=240)
 
 cipher_clear_button = customtkinter.CTkButton(
     master=tab2, 
@@ -370,8 +437,100 @@ cipher_clear_button = customtkinter.CTkButton(
     command=clear_textfield,
     width=80
 )
-cipher_clear_button.place(x=280, y=180)
+cipher_clear_button.place(x=280, y=240)
 
 hash_input_box.bind("<Return>", hash_text)  
+
+# ----- Tab 3 (Password) -----
+
+password_length_label = customtkinter.CTkLabel(
+    master=tab3,
+    text="Length:",
+    font=("Arial", 12),
+    text_color="#000000"
+)
+password_length_label.place(x=10, y=20)
+
+password_length_spinbox = customtkinter.CTkEntry(
+    master=tab3,
+    width=50,
+    text_color="#000000"
+)
+password_length_spinbox.place(x=70, y=20)
+password_length_spinbox.insert(0, "8") 
+
+def increase_length():
+    current = int(password_length_spinbox.get())
+    if current < 100:
+        password_length_spinbox.delete(0, "end")
+        password_length_spinbox.insert(0, str(current + 1))
+
+def decrease_length():
+    current = int(password_length_spinbox.get())
+    if current > 8:
+        password_length_spinbox.delete(0, "end")
+        password_length_spinbox.insert(0, str(current - 1))
+
+up_button = customtkinter.CTkButton(
+    master=tab3,
+    text="▲",
+    command=increase_length,
+    width=20
+)
+up_button.place(x=130, y=8)
+
+down_button = customtkinter.CTkButton(
+    master=tab3,
+    text="▼",
+    command=decrease_length,
+    width=20
+)
+down_button.place(x=130, y=40)
+
+use_chars = tk.BooleanVar(value=True)
+use_numbers = tk.BooleanVar(value=True)
+use_special = tk.BooleanVar(value=True)
+
+chars_checkbox = customtkinter.CTkCheckBox(
+    master=tab3,
+    text="Characters (A-Z, a-z)",
+    variable=use_chars,
+    text_color="#000000"
+)
+chars_checkbox.place(x=10, y=80)
+
+numbers_checkbox = customtkinter.CTkCheckBox(
+    master=tab3,
+    text="Numeric (0-9)",
+    variable=use_numbers,
+    text_color="#000000"
+)
+numbers_checkbox.place(x=10, y=110)
+
+special_checkbox = customtkinter.CTkCheckBox(
+    master=tab3,
+    text="Special (!@#$%^&*)",
+    variable=use_special,
+    text_color="#000000"
+)
+special_checkbox.place(x=10, y=140)
+
+password_frame = customtkinter.CTkFrame(master=tab3, fg_color="transparent")
+password_frame.place(x=10, y=180)
+
+password_output_box = customtkinter.CTkEntry(
+    master=password_frame,
+    width=240,
+    text_color="#000000"
+)
+password_output_box.pack(side="left", padx=5)
+
+generate_button = customtkinter.CTkButton(
+    master=password_frame,
+    text="Generate",
+    command=generate_password,
+    width=80
+)
+generate_button.pack(side="left")
 
 root.mainloop()
