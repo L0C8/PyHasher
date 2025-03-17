@@ -2,6 +2,7 @@ import os, customtkinter, random
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext
 from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256, AESCipher, AESCipherPass
+import string, random
 
 # ----- Cipher Functions -----
 aes_cipher = None
@@ -167,6 +168,29 @@ def browse_hash_file():
         hash_input_box.delete(0, "end")  
         hash_input_box.insert(0, file_path) 
 
+# ----- Password Generator Function -----
+def generate_password():
+    length = int(password_length_spinbox.get()) 
+
+    char_sets = []
+    if use_chars.get():
+        char_sets.append(string.ascii_letters) 
+    if use_numbers.get():
+        char_sets.append(string.digits)  
+    if use_special.get():
+        char_sets.append(string.punctuation) 
+
+    if not char_sets:
+        password_output_box.delete(0, "end")
+        password_output_box.insert(0, "Error: Select at least one option!")
+        return
+
+    all_chars = "".join(char_sets)
+    password = "".join(random.choice(all_chars) for _ in range(length))
+
+    password_output_box.delete(0, "end")
+    password_output_box.insert(0, password)
+
 # ----- Gui -----
 root = tk.Tk()
 root.title("PyHasher")
@@ -178,9 +202,11 @@ notebook.pack(expand=True, fill="both")
 
 tab1 = ttk.Frame(notebook)
 tab2 = ttk.Frame(notebook)
+tab3 = ttk.Frame(notebook)
 
 notebook.add(tab1, text="Hasher")
 notebook.add(tab2, text="Cipher")
+notebook.add(tab3, text="Password")
 
 # ----- Tab 1 -----
 
@@ -413,7 +439,98 @@ cipher_clear_button = customtkinter.CTkButton(
 )
 cipher_clear_button.place(x=280, y=240)
 
-
 hash_input_box.bind("<Return>", hash_text)  
+
+# ----- Tab 3 (Password) -----
+
+password_length_label = customtkinter.CTkLabel(
+    master=tab3,
+    text="Length:",
+    font=("Arial", 12),
+    text_color="#000000"
+)
+password_length_label.place(x=10, y=20)
+
+password_length_spinbox = customtkinter.CTkEntry(
+    master=tab3,
+    width=50,
+    text_color="#000000"
+)
+password_length_spinbox.place(x=70, y=20)
+password_length_spinbox.insert(0, "8") 
+
+def increase_length():
+    current = int(password_length_spinbox.get())
+    if current < 100:
+        password_length_spinbox.delete(0, "end")
+        password_length_spinbox.insert(0, str(current + 1))
+
+def decrease_length():
+    current = int(password_length_spinbox.get())
+    if current > 8:
+        password_length_spinbox.delete(0, "end")
+        password_length_spinbox.insert(0, str(current - 1))
+
+up_button = customtkinter.CTkButton(
+    master=tab3,
+    text="▲",
+    command=increase_length,
+    width=20
+)
+up_button.place(x=130, y=8)
+
+down_button = customtkinter.CTkButton(
+    master=tab3,
+    text="▼",
+    command=decrease_length,
+    width=20
+)
+down_button.place(x=130, y=40)
+
+use_chars = tk.BooleanVar(value=True)
+use_numbers = tk.BooleanVar(value=True)
+use_special = tk.BooleanVar(value=True)
+
+chars_checkbox = customtkinter.CTkCheckBox(
+    master=tab3,
+    text="Characters (A-Z, a-z)",
+    variable=use_chars,
+    text_color="#000000"
+)
+chars_checkbox.place(x=10, y=80)
+
+numbers_checkbox = customtkinter.CTkCheckBox(
+    master=tab3,
+    text="Numeric (0-9)",
+    variable=use_numbers,
+    text_color="#000000"
+)
+numbers_checkbox.place(x=10, y=110)
+
+special_checkbox = customtkinter.CTkCheckBox(
+    master=tab3,
+    text="Special (!@#$%^&*)",
+    variable=use_special,
+    text_color="#000000"
+)
+special_checkbox.place(x=10, y=140)
+
+password_frame = customtkinter.CTkFrame(master=tab3, fg_color="transparent")
+password_frame.place(x=10, y=180)
+
+password_output_box = customtkinter.CTkEntry(
+    master=password_frame,
+    width=240,
+    text_color="#000000"
+)
+password_output_box.pack(side="left", padx=5)
+
+generate_button = customtkinter.CTkButton(
+    master=password_frame,
+    text="Generate",
+    command=generate_password,
+    width=80
+)
+generate_button.pack(side="left")
 
 root.mainloop()
