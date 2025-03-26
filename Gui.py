@@ -533,4 +533,5 @@ generate_button = customtkinter.CTkButton(
 )
 generate_button.pack(side="left")
 
-root.mainloop()
+if __name__ == "__main__":
+    root.mainloop()
