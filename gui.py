@@ -1,6 +1,9 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 import configparser
+import os
+from cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256
+from utils import save_selected_theme, load_selected_theme
 
 from panels.gui_hash import create_hash_tab
 from panels.gui_cipher import create_cipher_tab
@@ -30,7 +33,8 @@ def run_app():
     root.resizable(False, False)
 
     themes = load_themes()
-    selected_theme = themes['MidnightPurple'] 
+    user_selected_theme = load_selected_theme()
+    selected_theme = themes[user_selected_theme] if user_selected_theme in themes else themes['Dark']
 
     apply_theme(root, selected_theme)
 
@@ -41,6 +45,6 @@ def run_app():
     notebook.add(create_hash_tab(notebook, selected_theme), text="Hasher")
     notebook.add(create_cipher_tab(notebook, selected_theme), text="Cipher")
     notebook.add(create_password_tab(notebook, selected_theme), text="Password")
-    notebook.add(create_settings_tab(notebook, selected_theme), text="Settings")
-    
+    notebook.add(create_settings_tab(notebook, selected_theme, themes), text="Settings")
+
     root.mainloop()
