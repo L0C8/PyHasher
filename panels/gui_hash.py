@@ -66,16 +66,16 @@ def create_hash_tab(parent, theme):
     hash_file_button.place(x=80, y=80)
 
     hash_input_box = tk.Entry(frame, width=30, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
-    hash_input_box.place(x=10, y=110)
+    hash_input_box.place(x=10, y=130)
     hash_input_box.bind("<Return>", hash_text)
 
     hash_output_button = tk.Button(frame, text="Hash", command=hash_text, bg=theme['button_bg'], fg=theme['button_fg'])
-    hash_output_button.place(x=320, y=105)
+    hash_output_button.place(x=320, y=125)
 
     hash_output_box = tk.Entry(frame, width=30, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
-    hash_output_box.place(x=10, y=150)
+    hash_output_box.place(x=10, y=170)
 
     hash_button_copy = tk.Button(frame, text="Copy", command=copy_hash_to_clipboard, bg=theme['button_bg'], fg=theme['button_fg'])
-    hash_button_copy.place(x=320, y=145)
+    hash_button_copy.place(x=320, y=165)
 
     return frame
