@@ -71,6 +71,12 @@ def create_cipher_tab(parent, theme):
         output_text.delete("1.0", "end")
         output_text.insert("1.0", result)
 
+    def copy_output():
+        result = output_text.get("1.0", "end-1c")
+        frame.clipboard_clear()
+        frame.clipboard_append(result)
+        frame.update()
+
     label_mode = tk.Label(frame, text="Mode:", bg=theme['bg'], fg=theme['fg'])
     label_mode.place(x=10, y=10)
 
@@ -79,27 +85,30 @@ def create_cipher_tab(parent, theme):
     mode_menu.place(x=60, y=5)
 
     label_key = tk.Label(frame, text="Key:", bg=theme['bg'], fg=theme['fg'])
-    label_key.place(x=10, y=40)
+    label_key.place(x=10, y=35)
 
     entry_key = tk.Entry(frame, width=30, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
-    entry_key.place(x=60, y=40)
+    entry_key.place(x=60, y=35)
 
-    button_set = tk.Button(frame, text="Set", command=set_cipher, bg=theme['button_bg'], fg=theme['button_fg'])
-    button_set.place(x=290, y=35)
+    button_set = tk.Button(frame, text="Set", command=set_cipher, bg=theme['button_bg'], fg=theme['button_fg'], width=7)
+    button_set.place(x=290, y=32)
 
-    button_random = tk.Button(frame, text="Random", command=randomize_key, bg=theme['button_bg'], fg=theme['button_fg'])
-    button_random.place(x=360, y=35)
+    button_random = tk.Button(frame, text="Random", command=randomize_key, bg=theme['button_bg'], fg=theme['button_fg'], width=7)
+    button_random.place(x=360, y=32)
 
-    input_text = tk.Text(frame, width=50, height=4, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
-    input_text.place(x=10, y=80)
+    input_text = tk.Text(frame, width=50, height=3, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
+    input_text.place(x=10, y=70)
 
-    output_text = tk.Text(frame, width=50, height=4, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
-    output_text.place(x=10, y=160)
+    output_text = tk.Text(frame, width=50, height=3, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
+    output_text.place(x=10, y=135)
 
-    button_encrypt = tk.Button(frame, text="Encrypt", command=encrypt_text, bg=theme['button_bg'], fg=theme['button_fg'])
-    button_encrypt.place(x=10, y=240)
+    button_encrypt = tk.Button(frame, text="Encrypt", command=encrypt_text, bg=theme['button_bg'], fg=theme['button_fg'], width=8)
+    button_encrypt.place(x=10, y=200)
 
-    button_decrypt = tk.Button(frame, text="Decrypt", command=decrypt_text, bg=theme['button_bg'], fg=theme['button_fg'])
-    button_decrypt.place(x=100, y=240)
+    button_decrypt = tk.Button(frame, text="Decrypt", command=decrypt_text, bg=theme['button_bg'], fg=theme['button_fg'], width=8)
+    button_decrypt.place(x=95, y=200)
+
+    button_copy = tk.Button(frame, text="Copy", command=copy_output, bg=theme['button_bg'], fg=theme['button_fg'], width=8)
+    button_copy.place(x=180, y=200)
 
     return frame
