@@ -2,7 +2,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import hashlib, base64, os
-
+from PIL import Image
+import random
 
 # Stringbuilder 
 
@@ -132,3 +133,46 @@ class AESCipherPass:
             return decrypted_data.decode()
         except Exception as e:
             return f"Error decrypting: {e}"
+        
+# Caesar Paint
+
+def caesarpaint_generate_key(width=16, height=16):
+    used = set()
+    img = Image.new("RGB", (width, height))
+    for y in range(height):
+        for x in range(width):
+            while True:
+                r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+                if (r, g, b) not in used:
+                    used.add((r, g, b))
+                    img.putpixel((x, y), (r, g, b))
+                    break
+    return img
+
+def caesarpaint_draw_text(text, key_img):
+    width = height = 2
+    while width * height < len(text):
+        width *= 2
+        height *= 2
+
+    output = Image.new("RGB", (width, height))
+    key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
+
+    for idx, char in enumerate(text):
+        if idx < width * height:
+            x = idx % width
+            y = idx // width
+            output.putpixel((x, y), key[ord(char) % 256])
+
+    return output
+
+def caesarpaint_read_image(image, key_img):
+    key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
+    reverse = {tuple(rgb): idx for idx, rgb in enumerate(key)}
+    text = ""
+    for y in range(image.height):
+        for x in range(image.width):
+            rgb = image.getpixel((x, y))
+            if tuple(rgb) in reverse:
+                text += chr(reverse[tuple(rgb)])
+    return text
