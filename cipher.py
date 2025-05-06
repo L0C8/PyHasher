@@ -4,9 +4,8 @@ from cryptography.hazmat.backends import default_backend
 import hashlib, base64, os
 from PIL import Image
 import random
-
-# Stringbuilder 
-
+from Cryptodome.Cipher import DES
+from Cryptodome.Util.Padding import pad, unpad
 
 # Hash 
 
@@ -66,7 +65,55 @@ def file_2_sha1(file_path):
     except Exception as e:
         return f"Error: {e}", f"Error: {e}"
     
-#AES Cipher 
+# Ciphers
+
+class DESCipher:
+    def __init__(self, password):
+        self.key = hashlib.md5(password.encode()).digest()[:8]  # DES uses 8-byte keys
+
+    def encrypt(self, plaintext):
+        iv = os.urandom(8)
+        cipher = DES.new(self.key, DES.MODE_CBC, iv)
+        padded = pad(plaintext.encode(), DES.block_size)
+        ciphertext = cipher.encrypt(padded)
+        return base64.b64encode(iv + ciphertext).decode()
+
+    def decrypt(self, encrypted_text):
+        try:
+            encrypted_data = base64.b64decode(encrypted_text)
+            iv = encrypted_data[:8]
+            ciphertext = encrypted_data[8:]
+            cipher = DES.new(self.key, DES.MODE_CBC, iv)
+            decrypted = unpad(cipher.decrypt(ciphertext), DES.block_size)
+            return decrypted.decode()
+        except Exception as e:
+            return f"Error decrypting: {e}"
+        
+
+class DESCipherPass:
+    def __init__(self, password):
+        self.key = self.set_key(password)
+
+    def set_key(self, password):
+        return hashlib.sha1(password.encode()).digest()[:8]  # SHA-1 derived 8-byte key
+
+    def encrypt(self, plaintext):
+        iv = os.urandom(8)
+        cipher = DES.new(self.key, DES.MODE_CBC, iv)
+        padded = pad(plaintext.encode(), DES.block_size)
+        ciphertext = cipher.encrypt(padded)
+        return base64.b64encode(iv + ciphertext).decode()
+
+    def decrypt(self, encrypted_text):
+        try:
+            encrypted_data = base64.b64decode(encrypted_text)
+            iv = encrypted_data[:8]
+            ciphertext = encrypted_data[8:]
+            cipher = DES.new(self.key, DES.MODE_CBC, iv)
+            decrypted = unpad(cipher.decrypt(ciphertext), DES.block_size)
+            return decrypted.decode()
+        except Exception as e:
+            return f"Error decrypting: {e}"
 
 class AESCipher:
     def __init__(self, key):

@@ -1,11 +1,12 @@
 import tkinter as tk
 import os
 import random
-from cipher import AESCipher, AESCipherPass
+from cipher import AESCipher, AESCipherPass, DESCipher, DESCipherPass
 from utils import PasswordBuilder
 
 cipher_instance = None
 cipher_pass_instance = None
+
 
 def create_cipher_tab(parent, theme):
     frame = tk.Frame(parent, bg=theme['bg'])
@@ -14,9 +15,9 @@ def create_cipher_tab(parent, theme):
 
     def update_mode_label():
         selected = cipher_mode.get()
-        if selected == "AES":
+        if selected in ("AES", "DES"):
             label_key.configure(text="Key:")
-        elif selected == "AES (Pass)":
+        else:
             label_key.configure(text="Pass:")
 
     def set_cipher():
@@ -24,34 +25,49 @@ def create_cipher_tab(parent, theme):
         key = entry_key.get().strip()
         if not key:
             return
-        if cipher_mode.get() == "AES":
+        mode = cipher_mode.get()
+        if mode == "AES":
             if len(key.encode()) not in (16, 24, 32):
                 return
             cipher_instance = AESCipher(key.encode())
-        else:
+        elif mode == "AES (Pass)":
             cipher_pass_instance = AESCipherPass(key)
+        elif mode == "DES":
+            cipher_instance = DESCipher(key.encode())
+        elif mode == "DES (Pass)":
+            cipher_pass_instance = DESCipherPass(key)
 
     def randomize_key():
         global cipher_instance, cipher_pass_instance
-        if cipher_mode.get() == "AES":
+        mode = cipher_mode.get()
+        if mode == "AES":
             random_key = os.urandom(random.choice([16, 24, 32]))
             entry_key.delete(0, tk.END)
             entry_key.insert(0, random_key.hex())
             cipher_instance = AESCipher(random_key)
+        elif mode == "DES":
+            random_key = os.urandom(8)
+            entry_key.delete(0, tk.END)
+            entry_key.insert(0, random_key.hex())
+            cipher_instance = DESCipher(random_key)
         else:
             builder = PasswordBuilder(use_chars=True, use_numbers=True, use_special=True, length=16)
             random_pass = builder.build()
             entry_key.delete(0, tk.END)
             entry_key.insert(0, random_pass)
-            cipher_pass_instance = AESCipherPass(random_pass)
+            if mode == "AES (Pass)":
+                cipher_pass_instance = AESCipherPass(random_pass)
+            elif mode == "DES (Pass)":
+                cipher_pass_instance = DESCipherPass(random_pass)
 
     def encrypt_text():
         text = input_text.get("1.0", "end-1c").strip()
         if not text:
             return
-        if cipher_mode.get() == "AES" and cipher_instance:
+        mode = cipher_mode.get()
+        if mode in ("AES", "DES") and cipher_instance:
             result = cipher_instance.encrypt(text)
-        elif cipher_mode.get() == "AES (Pass)" and cipher_pass_instance:
+        elif mode in ("AES (Pass)", "DES (Pass)") and cipher_pass_instance:
             result = cipher_pass_instance.encrypt(text)
         else:
             result = "Error"
@@ -62,9 +78,10 @@ def create_cipher_tab(parent, theme):
         text = input_text.get("1.0", "end-1c").strip()
         if not text:
             return
-        if cipher_mode.get() == "AES" and cipher_instance:
+        mode = cipher_mode.get()
+        if mode in ("AES", "DES") and cipher_instance:
             result = cipher_instance.decrypt(text)
-        elif cipher_mode.get() == "AES (Pass)" and cipher_pass_instance:
+        elif mode in ("AES (Pass)", "DES (Pass)") and cipher_pass_instance:
             result = cipher_pass_instance.decrypt(text)
         else:
             result = "Error"
@@ -80,7 +97,7 @@ def create_cipher_tab(parent, theme):
     label_mode = tk.Label(frame, text="Mode:", bg=theme['bg'], fg=theme['fg'])
     label_mode.place(x=10, y=10)
 
-    mode_menu = tk.OptionMenu(frame, cipher_mode, "AES", "AES (Pass)", command=lambda _: update_mode_label())
+    mode_menu = tk.OptionMenu(frame, cipher_mode, "AES", "AES (Pass)", "DES", "DES (Pass)", command=lambda _: update_mode_label())
     mode_menu.configure(bg=theme['button_bg'], fg=theme['button_fg'])
     mode_menu.place(x=60, y=5)
 

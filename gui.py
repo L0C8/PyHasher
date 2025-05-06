@@ -9,6 +9,7 @@ from panels.gui_hash import create_hash_tab
 from panels.gui_cipher import create_cipher_tab
 from panels.gui_password import create_password_tab
 from panels.gui_settings import create_settings_tab
+from panels.gui_caesarpaint import create_caesarpaint_tab   
 
 # === Load Themes ===
 def load_themes():
@@ -45,6 +46,7 @@ def run_app():
     notebook.add(create_hash_tab(notebook, selected_theme), text="Hasher")
     notebook.add(create_cipher_tab(notebook, selected_theme), text="Cipher")
     notebook.add(create_password_tab(notebook, selected_theme), text="Password")
+    notebook.add(create_caesarpaint_tab(notebook, selected_theme), text="CaesarPaint")
     notebook.add(create_settings_tab(notebook, selected_theme, themes), text="Settings")
 
     root.mainloop()
