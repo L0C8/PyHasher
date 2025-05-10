@@ -69,7 +69,10 @@ def file_2_sha1(file_path):
 
 class DESCipher:
     def __init__(self, password):
-        self.key = hashlib.md5(password.encode()).digest()[:8]  # DES uses 8-byte keys
+        if isinstance(password, str):
+            password = hashlib.md5(password.encode()).digest()
+        self.key = password[:8]
+
 
     def encrypt(self, plaintext):
         iv = os.urandom(8)
