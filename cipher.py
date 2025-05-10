@@ -2,10 +2,10 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import hashlib, base64, os
-
-
-# Stringbuilder 
-
+from PIL import Image
+import random
+from Cryptodome.Cipher import DES
+from Cryptodome.Util.Padding import pad, unpad
 
 # Hash 
 
@@ -65,7 +65,58 @@ def file_2_sha1(file_path):
     except Exception as e:
         return f"Error: {e}", f"Error: {e}"
     
-#AES Cipher 
+# Ciphers
+
+class DESCipher:
+    def __init__(self, password):
+        if isinstance(password, str):
+            password = hashlib.md5(password.encode()).digest()
+        self.key = password[:8]
+
+
+    def encrypt(self, plaintext):
+        iv = os.urandom(8)
+        cipher = DES.new(self.key, DES.MODE_CBC, iv)
+        padded = pad(plaintext.encode(), DES.block_size)
+        ciphertext = cipher.encrypt(padded)
+        return base64.b64encode(iv + ciphertext).decode()
+
+    def decrypt(self, encrypted_text):
+        try:
+            encrypted_data = base64.b64decode(encrypted_text)
+            iv = encrypted_data[:8]
+            ciphertext = encrypted_data[8:]
+            cipher = DES.new(self.key, DES.MODE_CBC, iv)
+            decrypted = unpad(cipher.decrypt(ciphertext), DES.block_size)
+            return decrypted.decode()
+        except Exception as e:
+            return f"Error decrypting: {e}"
+        
+
+class DESCipherPass:
+    def __init__(self, password):
+        self.key = self.set_key(password)
+
+    def set_key(self, password):
+        return hashlib.sha1(password.encode()).digest()[:8]  # SHA-1 derived 8-byte key
+
+    def encrypt(self, plaintext):
+        iv = os.urandom(8)
+        cipher = DES.new(self.key, DES.MODE_CBC, iv)
+        padded = pad(plaintext.encode(), DES.block_size)
+        ciphertext = cipher.encrypt(padded)
+        return base64.b64encode(iv + ciphertext).decode()
+
+    def decrypt(self, encrypted_text):
+        try:
+            encrypted_data = base64.b64decode(encrypted_text)
+            iv = encrypted_data[:8]
+            ciphertext = encrypted_data[8:]
+            cipher = DES.new(self.key, DES.MODE_CBC, iv)
+            decrypted = unpad(cipher.decrypt(ciphertext), DES.block_size)
+            return decrypted.decode()
+        except Exception as e:
+            return f"Error decrypting: {e}"
 
 class AESCipher:
     def __init__(self, key):
@@ -132,3 +183,46 @@ class AESCipherPass:
             return decrypted_data.decode()
         except Exception as e:
             return f"Error decrypting: {e}"
+        
+# Caesar Paint
+
+def caesarpaint_generate_key(width=16, height=16):
+    used = set()
+    img = Image.new("RGB", (width, height))
+    for y in range(height):
+        for x in range(width):
+            while True:
+                r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+                if (r, g, b) not in used:
+                    used.add((r, g, b))
+                    img.putpixel((x, y), (r, g, b))
+                    break
+    return img
+
+def caesarpaint_draw_text(text, key_img):
+    width = height = 2
+    while width * height < len(text):
+        width *= 2
+        height *= 2
+
+    output = Image.new("RGB", (width, height))
+    key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
+
+    for idx, char in enumerate(text):
+        if idx < width * height:
+            x = idx % width
+            y = idx // width
+            output.putpixel((x, y), key[ord(char) % 256])
+
+    return output
+
+def caesarpaint_read_image(image, key_img):
+    key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
+    reverse = {tuple(rgb): idx for idx, rgb in enumerate(key)}
+    text = ""
+    for y in range(image.height):
+        for x in range(image.width):
+            rgb = image.getpixel((x, y))
+            if tuple(rgb) in reverse:
+                text += chr(reverse[tuple(rgb)])
+    return text
