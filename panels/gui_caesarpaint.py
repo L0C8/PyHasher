@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image
 import os
-from cipher import caesarpaint_generate_key, caesarpaint_draw_text, caesarpaint_read_image, caesarpaint_draw_ciphered, caesarpaint_read_ciphered
+from cipher import caesarpaint_generate_key, caesarpaint_draw_text, caesarpaint_read_image
 
 loaded_keys = {}
 
