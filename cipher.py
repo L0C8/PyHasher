@@ -6,6 +6,8 @@ from PIL import Image
 import random
 from Cryptodome.Cipher import DES
 from Cryptodome.Util.Padding import pad, unpad
+from Cryptodome.Cipher import DES
+from Cryptodome.Util.Padding import unpad
 
 # Hash 
 
@@ -92,7 +94,6 @@ class DESCipher:
         except Exception as e:
             return f"Error decrypting: {e}"
         
-
 class DESCipherPass:
     def __init__(self, password):
         self.key = self.set_key(password)
@@ -201,18 +202,32 @@ def caesarpaint_generate_key(width=16, height=16):
 
 def caesarpaint_draw_text(text, key_img):
     width = height = 2
-    while width * height < len(text):
+    while width * height < len(text) * 2:  
         width *= 2
         height *= 2
 
     output = Image.new("RGB", (width, height))
     key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
 
+    used_positions = set()
+
     for idx, char in enumerate(text):
-        if idx < width * height:
-            x = idx % width
-            y = idx // width
-            output.putpixel((x, y), key[ord(char) % 256])
+        while True:
+            x = random.randint(0, width - 1)
+            y = random.randint(0, height - 1)
+            if (x, y) not in used_positions:
+                output.putpixel((x, y), key[ord(char) % 256])
+                used_positions.add((x, y))
+                break
+
+    for y in range(height):
+        for x in range(width):
+            if (x, y) not in used_positions:
+                while True:
+                    r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+                    if (r, g, b) not in key: 
+                        output.putpixel((x, y), (r, g, b))
+                        break
 
     return output
 
