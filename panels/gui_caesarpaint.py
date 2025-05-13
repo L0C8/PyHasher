@@ -15,8 +15,6 @@ def create_caesarpaint_tab(parent, theme):
     key_dropdown.place(x=10, y=10)
 
     mode_var = tk.StringVar(value="Standard")
-    # uncomment when DES Cipher works, not for current ticket
-    # mode_dropdown = tk.OptionMenu(frame, mode_var, "Standard", "DES Cipher")
     mode_dropdown = tk.OptionMenu(frame, mode_var, "Standard" )
     mode_dropdown.configure(bg=theme['button_bg'], fg=theme['button_fg'])
     mode_dropdown.place(x=10, y=50)
@@ -71,8 +69,9 @@ def create_caesarpaint_tab(parent, theme):
 
     tk.Button(frame, text="Load Key", command=load_key, bg=theme['button_bg'], fg=theme['button_fg'], width=8).place(x=150, y=10)
     tk.Button(frame, text="New Key", command=generate_key, bg=theme['button_bg'], fg=theme['button_fg'], width=8).place(x=250, y=10)
-    tk.Button(frame, text="Encode", command=encode_text, bg=theme['button_bg'], fg=theme['button_fg'], width=8).place(x=150, y=90)
-    tk.Button(frame, text="Decode", command=decode_image, bg=theme['button_bg'], fg=theme['button_fg'], width=8).place(x=250, y=90)
+
+    tk.Button(frame, text="Encode", command=encode_text, bg=theme['button_bg'], fg=theme['button_fg'], width=8).place(x=150, y=50)
+    tk.Button(frame, text="Decode", command=decode_image, bg=theme['button_bg'], fg=theme['button_fg'], width=8).place(x=250, y=50)
 
     text_input = tk.Text(frame, width=50, height=8, bg=theme['bg'], fg=theme['fg'], insertbackground=theme['fg'])
     text_input.place(x=10, y=130)

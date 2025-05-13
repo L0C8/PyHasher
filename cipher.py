@@ -6,6 +6,8 @@ from PIL import Image
 import random
 from Cryptodome.Cipher import DES
 from Cryptodome.Util.Padding import pad, unpad
+from Cryptodome.Cipher import DES
+from Cryptodome.Util.Padding import unpad
 
 # Hash 
 
@@ -239,63 +241,3 @@ def caesarpaint_read_image(image, key_img):
             if tuple(rgb) in reverse:
                 text += chr(reverse[tuple(rgb)])
     return text
-
-def caesarpaint_draw_ciphered(text, key_img):
-    width = height = 2
-    while width * height < len(text) * 2:  
-        width *= 2
-        height *= 2
-
-    output = Image.new("RGB", (width, height))
-    key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
-
-    used_positions = set()
-
-    des_key_bytes = bytes(key[0])[:8]
-    if len(des_key_bytes) < 8:
-        des_key_bytes = des_key_bytes.ljust(8, b'0')
-
-    cipher = DES.new(des_key_bytes, DES.MODE_ECB)
-    text = cipher.encrypt(pad(text.encode(), DES.block_size)).hex()
-
-    for idx, char in enumerate(text):
-        while True:
-            x = random.randint(0, width - 1)
-            y = random.randint(0, height - 1)
-            if (x, y) not in used_positions:
-                output.putpixel((x, y), key[ord(char) % 256])
-                used_positions.add((x, y))
-                break
-
-    for y in range(height):
-        for x in range(width):
-            if (x, y) not in used_positions:
-                while True:
-                    r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-                    if (r, g, b) not in key:
-                        output.putpixel((x, y), (r, g, b))
-                        break
-
-    return output
-
-def caesarpaint_read_ciphered(image, key_img):
-    key = [key_img.getpixel((x, y)) for y in range(16) for x in range(16)]
-    reverse = {tuple(rgb): idx for idx, rgb in enumerate(key)}
-    text = ""
-    for y in range(image.height):
-        for x in range(image.width):
-            rgb = image.getpixel((x, y))
-            if tuple(rgb) in reverse:
-                text += chr(reverse[tuple(rgb)])
-
-    des_key_bytes = bytes(key[0])[:8]
-    if len(des_key_bytes) < 8:
-        des_key_bytes = des_key_bytes.ljust(8, b'0')
-
-    cipher = DES.new(des_key_bytes, DES.MODE_ECB)
-    try:
-        decoded_hex = bytes.fromhex(text)
-        decrypted = unpad(cipher.decrypt(decoded_hex), DES.block_size)
-        return decrypted.decode()
-    except Exception as e:
-        return f"Error decoding: {e}"
