@@ -1,5 +1,12 @@
-from Cipher import str_2_md5, str_2_sha256, str_2_sha1, file_2_md5, file_2_sha1, file_2_sha256, AESCipher
+"""Launch the PyHasher GUI."""
+
 import subprocess
 
-# Open Gui.py
-subprocess.run(["python3", "Gui.py"])
+
+def main() -> None:
+    subprocess.run(["python3", "Gui.py"], check=False)
+
+
+if __name__ == "__main__":
+    main()
+

@@ -1,7 +1,11 @@
+"""Utility functions for hashing and AES encryption."""
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
-import hashlib, cryptography, base64, os
+import hashlib
+import base64
+import os
 
 # Hash 
 
@@ -32,34 +36,34 @@ def str_2_sha1(text):
     return sha1_hash
 
 def file_2_sha256(file_path):
+    """Return the SHA-256 hash of the given file."""
     sha256_hash = hashlib.sha256()
 
     try:
         with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):  # Read in 4KB chunks
+            for chunk in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(chunk)
-        
+
         return sha256_hash.hexdigest()
-    
     except FileNotFoundError:
-        return "Error: File not found.", "Error: File not found."
+        return "Error: File not found."
     except Exception as e:
-        return f"Error: {e}", f"Error: {e}"
+        return f"Error: {e}"
 
 def file_2_sha1(file_path):
+    """Return the SHA-1 hash of the given file."""
     sha1_hash = hashlib.sha1()
 
     try:
         with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):  # Read in 4KB chunks
+            for chunk in iter(lambda: f.read(4096), b""):
                 sha1_hash.update(chunk)
-        
+
         return sha1_hash.hexdigest()
-    
     except FileNotFoundError:
-        return "Error: File not found.", "Error: File not found."
+        return "Error: File not found."
     except Exception as e:
-        return f"Error: {e}", f"Error: {e}"
+        return f"Error: {e}"
     
 #AES Cipher 
 
@@ -94,3 +98,4 @@ class AESCipher:
         decrypted_data = unpadder.update(decrypted_padded) + unpadder.finalize()
 
         return decrypted_data.decode()
+

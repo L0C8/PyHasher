@@ -1,16 +1,28 @@
+import os
 import tkinter as tk
-import os, customtkinter
 from tkinter import ttk, filedialog
-from Cipher import str_2_md5, str_2_sha1, str_2_sha256, file_2_md5, file_2_sha1, file_2_sha256 
+import customtkinter
+
+from Cipher import (
+    str_2_md5,
+    str_2_sha1,
+    str_2_sha256,
+    file_2_md5,
+    file_2_sha1,
+    file_2_sha256,
+    AESCipher,
+)
 
 
-# ----- Cipher Functions -----
+customtkinter.set_appearance_mode("System")
 
-# ----- Hash Functions ----- 
-def hash_text(event=None):  
-    
+
+# ---------------------- Hashing functions ----------------------
+
+def hash_text(event=None):
+    """Hash the contents of the input box."""
     text = input_box.get()
-    
+
     if file_mode.get():
         if not os.path.isfile(text):
             output_box.delete(0, tk.END)
@@ -25,7 +37,7 @@ def hash_text(event=None):
             hashed = file_2_sha256(text)
         else:
             hashed = "Error: Select a hash type"
-    else:         
+    else:
         if selected_hash.get() == "MD5":
             hashed = str_2_md5(text)
         elif selected_hash.get() == "SHA-1":
@@ -38,160 +50,168 @@ def hash_text(event=None):
     output_box.delete(0, tk.END)
     output_box.insert(0, hashed)
 
-# ----- Gui -----
+
+# ---------------------- AES functions ----------------------
+
+def encrypt_text():
+    """Encrypt the text from cipher_input using the provided key."""
+    key = key_entry.get().encode()
+    plaintext = cipher_input.get()
+
+    if len(key) not in (16, 24, 32):
+        cipher_output.delete(0, tk.END)
+        cipher_output.insert(0, "Key must be 16/24/32 bytes")
+        return
+
+    cipher = AESCipher(key)
+    encrypted = cipher.encrypt(plaintext)
+    cipher_output.delete(0, tk.END)
+    cipher_output.insert(0, encrypted)
+
+
+def decrypt_text():
+    """Decrypt the text from cipher_input using the provided key."""
+    key = key_entry.get().encode()
+    ciphertext = cipher_input.get()
+
+    if len(key) not in (16, 24, 32):
+        cipher_output.delete(0, tk.END)
+        cipher_output.insert(0, "Key must be 16/24/32 bytes")
+        return
+
+    cipher = AESCipher(key)
+    try:
+        decrypted = cipher.decrypt(ciphertext)
+    except Exception as exc:  # Broad except to show user errors
+        decrypted = f"Error: {exc}"
+    cipher_output.delete(0, tk.END)
+    cipher_output.insert(0, decrypted)
+
+
+# ---------------------- GUI setup ----------------------
 root = tk.Tk()
 root.title("PyHasher")
-root.geometry("480x256")
-root.resizable(0, 0)
+root.geometry("500x300")
+root.resizable(False, False)
 
 notebook = ttk.Notebook(root)
 notebook.pack(expand=True, fill="both")
 
-tab1 = ttk.Frame(notebook)
-tab2 = ttk.Frame(notebook)
+hash_tab = ttk.Frame(notebook)
+cipher_tab = ttk.Frame(notebook)
 
-notebook.add(tab1, text="Hasher")
-notebook.add(tab2, text="Cipher")
+notebook.add(hash_tab, text="Hasher")
+notebook.add(cipher_tab, text="Cipher")
 
-# ----- functions -----
 
+# ---------------------- Hasher tab ----------------------
+selected_hash = tk.StringVar(value="MD5")
+file_mode = tk.BooleanVar(value=False)
+
+hash_options = customtkinter.CTkFrame(hash_tab, fg_color="transparent")
+hash_options.pack(pady=10)
+
+for text, val in ("MD5", "MD5"), ("SHA-1", "SHA-1"), ("SHA-256", "SHA-256"):
+    customtkinter.CTkRadioButton(
+        hash_options,
+        text=text,
+        variable=selected_hash,
+        value=val,
+        text_color="#000000",
+    ).pack(side="left", padx=5)
+
+file_frame = customtkinter.CTkFrame(hash_tab, fg_color="transparent")
+file_frame.pack(pady=5)
+
+file_checkbox = customtkinter.CTkCheckBox(
+    file_frame,
+    text="File",
+    text_color="#000000",
+    variable=file_mode,
+)
+file_checkbox.pack(side="left")
+
+file_button = customtkinter.CTkButton(
+    file_frame,
+    text="Browse",
+    width=80,
+    command=lambda: browse_file(),
+)
+file_button.pack(side="left", padx=5)
+
+input_frame = customtkinter.CTkFrame(hash_tab, fg_color="transparent")
+input_frame.pack(pady=5)
+
+input_box = customtkinter.CTkEntry(input_frame, width=280, text_color="#000000")
+input_box.pack(side="left", padx=5)
+input_box.bind("<Return>", hash_text)
+
+hash_button = customtkinter.CTkButton(
+    input_frame,
+    text="Hash",
+    width=80,
+    command=hash_text,
+)
+hash_button.pack(side="left")
+
+output_frame = customtkinter.CTkFrame(hash_tab, fg_color="transparent")
+output_frame.pack(pady=5)
+
+output_box = customtkinter.CTkEntry(output_frame, width=280, text_color="#000000")
+output_box.pack(side="left", padx=5)
+
+copy_button = customtkinter.CTkButton(
+    output_frame,
+    text="Copy",
+    width=80,
+    command=lambda: copy_to_clipboard(),
+)
+copy_button.pack(side="left")
+
+
+# ---------------------- Cipher tab ----------------------
+key_label = customtkinter.CTkLabel(cipher_tab, text="Key", text_color="#000000")
+key_label.pack(pady=(10, 0))
+
+key_entry = customtkinter.CTkEntry(cipher_tab, width=360, text_color="#000000")
+key_entry.pack(pady=5)
+
+cipher_input = customtkinter.CTkEntry(cipher_tab, width=360, text_color="#000000")
+cipher_input.pack(pady=5)
+
+cipher_buttons = customtkinter.CTkFrame(cipher_tab, fg_color="transparent")
+cipher_buttons.pack(pady=5)
+
+customtkinter.CTkButton(
+    cipher_buttons,
+    text="Encrypt",
+    width=80,
+    command=encrypt_text,
+).pack(side="left", padx=5)
+customtkinter.CTkButton(
+    cipher_buttons,
+    text="Decrypt",
+    width=80,
+    command=decrypt_text,
+).pack(side="left", padx=5)
+
+cipher_output = customtkinter.CTkEntry(cipher_tab, width=360, text_color="#000000")
+cipher_output.pack(pady=5)
+
+
+# ---------------------- Helper functions ----------------------
 def copy_to_clipboard():
     root.clipboard_clear()
     root.clipboard_append(output_box.get())
     root.update()
 
+
 def browse_file():
     file_path = filedialog.askopenfilename(title="Select a File")
     if file_path:
-        input_box.delete(0, "end")  # Clear previous input
-        input_box.insert(0, file_path)  # Insert selected file path
+        input_box.delete(0, tk.END)
+        input_box.insert(0, file_path)
 
-# ----- Tab 1 -----
-
-selected_hash = tk.StringVar(value="MD5")  
-
-radio_frame = customtkinter.CTkFrame(
-    master=tab1,
-    fg_color="transparent"
-    )
-radio_frame.place(x=128, y=8)
-
-Hash_Label_KeyInput = customtkinter.CTkLabel(
-    master=tab1,
-    text="Hash",
-    font=("Arial", 14),
-    text_color="#000000",
-    height=30,
-    width=95,
-    corner_radius=0
-    )
-
-Hash_Label_KeyInput.place(x=10, y=10)
-
-radio_frame = customtkinter.CTkFrame(
-    master=tab1, 
-    fg_color="transparent")
-radio_frame.place(x=10, y=40)
-
-customtkinter.CTkRadioButton(
-    radio_frame, 
-    text="MD5", 
-    variable=selected_hash, 
-    value="MD5",
-    text_color="#000000"
-    ).pack(side="left", padx=5)
-customtkinter.CTkRadioButton(
-    radio_frame, 
-    text="SHA-1", 
-    variable=selected_hash, 
-    value="SHA-1",
-    text_color="#000000"
-    ).pack(side="left", padx=5)
-customtkinter.CTkRadioButton(
-    radio_frame, 
-    text="SHA-256",     
-    variable=selected_hash, 
-    value="SHA-256",
-    text_color="#000000"
-    ).pack(side="left", padx=5)
-
-file_mode = tk.BooleanVar(value=False)
-
-file_checkbox = customtkinter.CTkCheckBox(
-    master=tab1, 
-    text="File", 
-    text_color="#000000",
-    variable=file_mode
-    )
-
-file_checkbox.place(x=11, y=80)
-
-file_button = customtkinter.CTkButton(
-    master=tab1, 
-    text="Browse", 
-    command=browse_file, 
-    width=80
-)
-file_button.place(x=80, y=80)
-
-input_frame = customtkinter.CTkFrame(
-    master=tab1, 
-    fg_color="transparent"
-    )
-input_frame.place(x=10, y=110)
-
-input_box = customtkinter.CTkEntry(
-    master=input_frame, 
-    width=240, 
-    text_color="#000000"
-    )
-input_box.pack(side="left", padx=5)
-input_box.bind("<Return>", hash_text)
-
-hash_button = customtkinter.CTkButton(
-    master=input_frame, 
-    text="Hash", 
-    command=hash_text, 
-    width=80
-    )
-hash_button.pack(side="left")
-
-output_frame = customtkinter.CTkFrame(
-    master=tab1, 
-    fg_color="transparent"
-    )
-output_frame.place(x=10, y=150)
-
-output_box = customtkinter.CTkEntry(
-    master=output_frame, 
-    width=240, 
-    text_color="#000000"
-    )
-
-output_box.pack(side="left", padx=5)
-
-copy_button = customtkinter.CTkButton(
-    master=output_frame, 
-    text="Copy", 
-    command=copy_to_clipboard, 
-    width=80
-    )
-
-copy_button.pack(side="left")
-
-# ----- Tab 2 -----
-
-Cipher_Label_KeyInput = customtkinter.CTkLabel(
-    master=tab2,
-    text="Key",
-    font=("Arial", 14),
-    text_color="#000000",
-    height=30,
-    width=95,
-    corner_radius=0
-    )
-Cipher_Label_KeyInput.place(x=0, y=0)
-
-input_box.bind("<Return>", hash_text)  
 
 root.mainloop()
+
