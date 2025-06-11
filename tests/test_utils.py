@@ -12,6 +12,13 @@ def test_get_password():
     assert len(pw) == 8
 
 
+def test_hash_file(tmp_path):
+    file_path = tmp_path / "sample.txt"
+    file_path.write_text("hello")
+    result = utils.hash_file(str(file_path))
+    assert len(result) > 0
+
+
 def test_ensure_themes(tmp_path, monkeypatch):
     temp_data = tmp_path / "data"
     monkeypatch.setattr(utils, "THEME_PATH", temp_data / "themes.ini")
