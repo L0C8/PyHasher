@@ -4,6 +4,7 @@ from tkinter import ttk
 from gui.panels.panel_hasher import HasherPanel
 from gui.panels.panel_password import PasswordPanel
 from gui.panels.panel_cipher import CipherPanel
+from gui.panels.panel_stripmeta import StripMetaPanel
 from gui.panels.panel_settings import SettingsPanel
 from core import utils
 
@@ -64,6 +65,9 @@ class PyHashGUI:
 
         cipher_tab = CipherPanel(self.notebook)
         self.notebook.add(cipher_tab, text="Cipher")
+
+        strip_tab = StripMetaPanel(self.notebook)
+        self.notebook.add(strip_tab, text="Metadata")
 
         settings_tab = SettingsPanel(self.notebook, self.apply_theme)
         self.notebook.add(settings_tab, text="Settings")

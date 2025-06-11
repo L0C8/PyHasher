@@ -40,3 +40,11 @@ def test_ensure_themes(tmp_path, monkeypatch):
         assert 'text_foreground' in th
         assert 'dropdown_background' in th
         assert 'dropdown_foreground' in th
+
+
+def test_strip_metadata(tmp_path):
+    src = tmp_path / "orig.txt"
+    src.write_text("hello")
+    dest = tmp_path / "new.txt"
+    utils.strip_metadata(str(src), str(dest))
+    assert dest.read_text() == "hello"
