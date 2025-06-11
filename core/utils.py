@@ -51,6 +51,44 @@ def strip_metadata(src_path, dest_path):
         for chunk in iter(lambda: src.read(8192), b''):
             dst.write(chunk)
 
+
+def save_metadata(src_path, dest_path):
+    """Extract metadata from a file and save it to a text file.
+
+    For common image formats, this attempts to read available metadata using
+    Pillow if installed. If no metadata can be found, the output file will
+    contain a short message indicating such.
+    """
+    if not os.path.exists(src_path):
+        raise FileNotFoundError(f"File not found: {src_path}")
+
+    lines = []
+    ext = os.path.splitext(src_path)[1].lower()
+    if ext in {'.png', '.jpg', '.jpeg', '.bmp', '.gif'}:
+        try:
+            from PIL import Image
+        except Exception:
+            pass
+        else:
+            with Image.open(src_path) as img:
+                if img.info:
+                    for k, v in img.info.items():
+                        lines.append(f"{k}: {v}")
+                try:
+                    exif = img.getexif()
+                except Exception:
+                    exif = None
+                if exif:
+                    for k, v in exif.items():
+                        lines.append(f"{k}: {v}")
+
+    if not lines:
+        lines.append("No metadata found.")
+
+    os.makedirs(os.path.dirname(dest_path) or '.', exist_ok=True)
+    with open(dest_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines))
+
 # password defs 
 def get_password(length=12, use_chars=True, use_nums=True, use_specials=True):
     chars = ''

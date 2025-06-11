@@ -69,3 +69,26 @@ def test_strip_metadata_png(tmp_path):
 
     with Image.open(dest) as out_img:
         assert "Author" not in out_img.info
+
+
+def test_save_metadata_text(tmp_path):
+    src = tmp_path / "orig.txt"
+    src.write_text("hello")
+    dest = tmp_path / "meta.txt"
+    utils.save_metadata(str(src), str(dest))
+    assert dest.exists()
+    assert "No metadata" in dest.read_text()
+
+
+@pytest.mark.skipif(not PIL_AVAILABLE, reason="Pillow not installed")
+def test_save_metadata_png(tmp_path):
+    img = Image.new("RGB", (1, 1), color="red")
+    meta = PngImagePlugin.PngInfo()
+    meta.add_text("Author", "tester")
+    src = tmp_path / "img.png"
+    img.save(src, pnginfo=meta)
+
+    dest = tmp_path / "img_meta.txt"
+    utils.save_metadata(str(src), str(dest))
+    text = dest.read_text()
+    assert "Author" in text

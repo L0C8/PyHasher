@@ -8,5 +8,6 @@ It features:
 - Simple AES-based string encryption/decryption
 - A basic password generator with customizable length and character types
 - Utility to strip metadata from files (images are re-saved without EXIF)
+- Option to save file metadata to a text file
 
 This was mainly a learning project, but it's fully functional and self-contained, thanks for checking it out!
