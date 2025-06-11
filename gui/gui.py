@@ -31,6 +31,8 @@ class PyHashGUI:
         entry_fg = theme.get('entry_foreground', '#000000')
         text_bg = theme.get('text_background', entry_bg)
         text_fg = theme.get('text_foreground', entry_fg)
+        dd_bg = theme.get('dropdown_background', entry_bg)
+        dd_fg = theme.get('dropdown_foreground', entry_fg)
 
         style = ttk.Style()
         style.configure('.', background=bg, foreground=fg)
@@ -38,12 +40,16 @@ class PyHashGUI:
         style.configure('TNotebook.Tab', background=tab_bg, foreground=tab_fg)
         style.map('TNotebook.Tab', background=[('selected', tab_bg)], foreground=[('selected', tab_fg)])
         style.configure('TEntry', fieldbackground=entry_bg, foreground=entry_fg)
+        style.configure('TCombobox', fieldbackground=dd_bg, background=dd_bg,
+                        foreground=dd_fg)
 
         self.root.configure(bg=bg)
         self.root.option_add('*Text.background', text_bg)
         self.root.option_add('*Text.foreground', text_fg)
         self.root.option_add('*Entry.background', entry_bg)
         self.root.option_add('*Entry.foreground', entry_fg)
+        self.root.option_add('*TCombobox*Listbox.background', dd_bg)
+        self.root.option_add('*TCombobox*Listbox.foreground', dd_fg)
         
     def setup_tabs(self):
         self.notebook = ttk.Notebook(self.root)

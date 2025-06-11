@@ -33,7 +33,10 @@ def test_ensure_themes(tmp_path, monkeypatch):
     utils.ensure_themes()
     assert os.path.exists(utils.THEME_PATH)
     themes = utils.load_themes()
-    assert 'dark' in themes and 'light' in themes
+    expected = {'dark', 'light', 'dark_blue', 'matrix', 'sunset', 'ocean', 'pastel'}
+    assert expected.issubset(themes.keys())
     for th in themes.values():
         assert 'tab_background' in th
         assert 'text_foreground' in th
+        assert 'dropdown_background' in th
+        assert 'dropdown_foreground' in th
