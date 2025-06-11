@@ -24,6 +24,7 @@ class StripMetaPanel(ttk.Frame):
         ttk.Button(self, text="Save As", command=self.browse_output).grid(row=1, column=2, padx=5, pady=5)
 
         ttk.Button(self, text="Strip Metadata", command=self.strip_metadata).grid(row=2, column=1, pady=10)
+        ttk.Button(self, text="Save Metadata", command=self.save_metadata).grid(row=2, column=2, pady=10)
         self.status = ttk.Label(self, text="")
         self.status.grid(row=3, column=0, columnspan=3)
 
@@ -60,4 +61,23 @@ class StripMetaPanel(ttk.Frame):
             self.status.config(text=f"Error: {exc}")
         else:
             self.status.config(text=f"Saved to {dst}")
+
+    def save_metadata(self):
+        src = self.in_entry.get()
+        if not src:
+            self.status.config(text="Select input file")
+            return
+        path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text Files", "*.txt")],
+            initialfile=os.path.splitext(os.path.basename(src))[0] + "_metadata.txt",
+        )
+        if not path:
+            return
+        try:
+            utils.save_metadata(src, path)
+        except Exception as exc:
+            self.status.config(text=f"Error: {exc}")
+        else:
+            self.status.config(text=f"Metadata saved to {path}")
 
