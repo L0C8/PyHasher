@@ -4,11 +4,7 @@ from cryptography.hazmat.backends import default_backend
 import hashlib, base64, os
 
 
-# Stringbuilder 
-
-
 # Hash 
-
 def str_2_md5(text):
     md5_hash = hashlib.md5()
     md5_hash.update(text.encode('utf-8'))  
@@ -66,7 +62,6 @@ def file_2_sha1(file_path):
         return f"Error: {e}", f"Error: {e}"
     
 #AES Cipher 
-
 class AESCipher:
     def __init__(self, key):
         self.key = key  
