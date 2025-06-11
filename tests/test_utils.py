@@ -1,6 +1,12 @@
 import os
 import pytest
 
+try:
+    from PIL import Image, PngImagePlugin
+    PIL_AVAILABLE = True
+except ModuleNotFoundError:
+    PIL_AVAILABLE = False
+
 from core import utils
 
 
@@ -48,3 +54,18 @@ def test_strip_metadata(tmp_path):
     dest = tmp_path / "new.txt"
     utils.strip_metadata(str(src), str(dest))
     assert dest.read_text() == "hello"
+
+
+@pytest.mark.skipif(not PIL_AVAILABLE, reason="Pillow not installed")
+def test_strip_metadata_png(tmp_path):
+    img = Image.new("RGB", (1, 1), color="red")
+    meta = PngImagePlugin.PngInfo()
+    meta.add_text("Author", "tester")
+    src = tmp_path / "orig.png"
+    img.save(src, pnginfo=meta)
+
+    dest = tmp_path / "clean.png"
+    utils.strip_metadata(str(src), str(dest))
+
+    with Image.open(dest) as out_img:
+        assert "Author" not in out_img.info

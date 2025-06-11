@@ -1,7 +1,7 @@
 import hashlib
+import os
 import random
 import string
-import os
 from configparser import ConfigParser
 
 
@@ -23,11 +23,30 @@ def hash_file(file_path, method='sha256'):
 
 # metadata utils
 def strip_metadata(src_path, dest_path):
-    """Copy file contents to a new file without preserving metadata."""
+    """Copy file contents to a new file without preserving metadata.
+
+    If Pillow is available and the file is an image, the image will be
+    re-saved without metadata. Otherwise the file contents are copied as-is.
+    """
     if not os.path.exists(src_path):
         raise FileNotFoundError(f"File not found: {src_path}")
 
     os.makedirs(os.path.dirname(dest_path) or '.', exist_ok=True)
+
+    ext = os.path.splitext(src_path)[1].lower()
+    if ext in {'.png', '.jpg', '.jpeg', '.bmp', '.gif'}:
+        try:
+            from PIL import Image
+        except Exception:
+            pass
+        else:
+            with Image.open(src_path) as img:
+                new_img = Image.new(img.mode, img.size)
+                new_img.putdata(list(img.getdata()))
+                new_img.save(dest_path)
+                return
+
+    # Fallback: just copy bytes
     with open(src_path, 'rb') as src, open(dest_path, 'wb') as dst:
         for chunk in iter(lambda: src.read(8192), b''):
             dst.write(chunk)
