@@ -40,12 +40,30 @@ THEME_PATH = os.path.join('data', 'themes.ini')
 
 
 def ensure_themes():
-    """Ensure the default themes file exists."""
+    """Ensure the default themes file exists with expanded options."""
     os.makedirs(os.path.dirname(THEME_PATH), exist_ok=True)
     if not os.path.exists(THEME_PATH):
         config = ConfigParser()
-        config['dark'] = {'background': '#333333', 'foreground': '#FFFFFF'}
-        config['light'] = {'background': '#FFFFFF', 'foreground': '#000000'}
+        config['dark'] = {
+            'background': '#222222',
+            'foreground': '#ffffff',
+            'tab_background': '#333333',
+            'tab_foreground': '#ffffff',
+            'entry_background': '#444444',
+            'entry_foreground': '#ffffff',
+            'text_background': '#444444',
+            'text_foreground': '#ffffff'
+        }
+        config['light'] = {
+            'background': '#f0f0f0',
+            'foreground': '#000000',
+            'tab_background': '#e0e0e0',
+            'tab_foreground': '#000000',
+            'entry_background': '#ffffff',
+            'entry_foreground': '#000000',
+            'text_background': '#ffffff',
+            'text_foreground': '#000000'
+        }
         with open(THEME_PATH, 'w') as f:
             config.write(f)
 
