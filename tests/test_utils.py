@@ -56,19 +56,54 @@ def test_strip_metadata(tmp_path):
     assert dest.read_text() == "hello"
 
 
-@pytest.mark.skipif(not PIL_AVAILABLE, reason="Pillow not installed")
+def _make_png_with_text(path):
+    import struct, zlib
+
+    def chunk(typ, data):
+        return (
+            struct.pack(">I", len(data))
+            + typ
+            + data
+            + struct.pack(">I", zlib.crc32(typ + data) & 0xFFFFFFFF)
+        )
+
+    raw = b"\x00\xff\x00\x00"  # one red pixel
+    with open(path, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n")
+        f.write(chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)))
+        f.write(chunk(b"IDAT", zlib.compress(raw)))
+        f.write(chunk(b"tEXt", b"Title\x00Hello"))
+        f.write(chunk(b"IEND", b""))
+
+
+def _read_png_chunks(path):
+    import struct
+    with open(path, "rb") as f:
+        data = f.read()
+    assert data.startswith(b"\x89PNG\r\n\x1a\n")
+    idx = 8
+    chunks = []
+    while idx + 8 <= len(data):
+        length = int.from_bytes(data[idx : idx + 4], "big")
+        ctype = data[idx + 4 : idx + 8]
+        chunks.append(ctype)
+        idx += 8 + length + 4
+        if ctype == b"IEND":
+            break
+    return chunks
+
+
 def test_strip_metadata_png(tmp_path):
-    img = Image.new("RGB", (1, 1), color="red")
-    meta = PngImagePlugin.PngInfo()
-    meta.add_text("Author", "tester")
     src = tmp_path / "orig.png"
-    img.save(src, pnginfo=meta)
+    _make_png_with_text(src)
 
     dest = tmp_path / "clean.png"
     utils.strip_metadata(str(src), str(dest))
 
-    with Image.open(dest) as out_img:
-        assert "Author" not in out_img.info
+    chunks = _read_png_chunks(dest)
+    assert b"tEXt" not in chunks
+    assert b"iTXt" not in chunks
+    assert b"zTXt" not in chunks
 
 
 def test_save_metadata_text(tmp_path):

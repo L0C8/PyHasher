@@ -25,8 +25,11 @@ def hash_file(file_path, method='sha256'):
 def strip_metadata(src_path, dest_path):
     """Copy file contents to a new file without preserving metadata.
 
-    If Pillow is available and the file is an image, the image will be
-    re-saved without metadata. Otherwise the file contents are copied as-is.
+    The function attempts to remove all metadata from common image formats.
+    PNG files are processed even when Pillow isn't installed by stripping any
+    non-essential chunks. For other image formats, Pillow is used when
+    available to re-save the image without EXIF or ancillary info. Files that
+    cannot be processed as images are copied byte-for-byte.
     """
     if not os.path.exists(src_path):
         raise FileNotFoundError(f"File not found: {src_path}")
@@ -34,22 +37,72 @@ def strip_metadata(src_path, dest_path):
     os.makedirs(os.path.dirname(dest_path) or '.', exist_ok=True)
 
     ext = os.path.splitext(src_path)[1].lower()
-    if ext in {'.png', '.jpg', '.jpeg', '.bmp', '.gif'}:
+
+    if ext == '.png':
         try:
-            from PIL import Image
+            _strip_png(src_path, dest_path)
+            return
         except Exception:
             pass
-        else:
-            with Image.open(src_path) as img:
-                new_img = Image.new(img.mode, img.size)
-                new_img.putdata(list(img.getdata()))
-                new_img.save(dest_path)
-                return
+
+    try:
+        from PIL import Image
+    except Exception:
+        Image = None
+
+    if Image and ext in {'.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.png'}:
+        with Image.open(src_path) as img:
+            new_img = Image.new(img.mode, img.size)
+            new_img.putdata(list(img.getdata()))
+            save_kwargs = {}
+            if ext in {'.jpg', '.jpeg', '.tiff'}:
+                save_kwargs['exif'] = None
+            if ext == '.png':
+                save_kwargs['pnginfo'] = None
+            new_img.save(dest_path, **save_kwargs)
+            return
 
     # Fallback: just copy bytes
     with open(src_path, 'rb') as src, open(dest_path, 'wb') as dst:
         for chunk in iter(lambda: src.read(8192), b''):
             dst.write(chunk)
+
+
+def _strip_png(src_path, dest_path):
+    """Remove metadata from a PNG without Pillow."""
+    import struct
+
+    keep = {
+        b'IHDR', b'PLTE', b'IDAT', b'IEND', b'tRNS', b'gAMA',
+        b'cHRM', b'sBIT', b'bKGD', b'pHYs', b'sRGB', b'hIST',
+        b'acTL', b'fcTL', b'fdAT'
+    }
+
+    with open(src_path, 'rb') as src:
+        data = src.read()
+
+    if not data.startswith(b'\x89PNG\r\n\x1a\n'):
+        raise ValueError('Not a PNG file')
+
+    out = bytearray()
+    out.extend(b'\x89PNG\r\n\x1a\n')
+    idx = 8
+    length = len(data)
+    while idx + 8 <= length:
+        size = int.from_bytes(data[idx:idx+4], 'big')
+        ctype = data[idx+4:idx+8]
+        end = idx + 8 + size + 4
+        if end > length:
+            break
+        chunk = data[idx:end]
+        if ctype in keep:
+            out.extend(chunk)
+        idx = end
+        if ctype == b'IEND':
+            break
+
+    with open(dest_path, 'wb') as dst:
+        dst.write(out)
 
 
 def save_metadata(src_path, dest_path):
