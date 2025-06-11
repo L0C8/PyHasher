@@ -1,6 +1,8 @@
 import hashlib
 import random
 import string
+import os
+from configparser import ConfigParser
 
 
 # hash defs 
@@ -32,3 +34,25 @@ def get_password(length=12, use_chars=True, use_nums=True, use_specials=True):
         raise ValueError("At least one character type must be selected.")
 
     return ''.join(random.choice(chars) for _ in range(length))
+
+# theme defs
+THEME_PATH = os.path.join('data', 'themes.ini')
+
+
+def ensure_themes():
+    """Ensure the default themes file exists."""
+    os.makedirs(os.path.dirname(THEME_PATH), exist_ok=True)
+    if not os.path.exists(THEME_PATH):
+        config = ConfigParser()
+        config['dark'] = {'background': '#333333', 'foreground': '#FFFFFF'}
+        config['light'] = {'background': '#FFFFFF', 'foreground': '#000000'}
+        with open(THEME_PATH, 'w') as f:
+            config.write(f)
+
+
+def load_themes():
+    """Load all available themes from the config file."""
+    ensure_themes()
+    config = ConfigParser()
+    config.read(THEME_PATH)
+    return {section: dict(config[section]) for section in config.sections()}

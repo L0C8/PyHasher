@@ -1,7 +1,7 @@
 # panels/panel_hasher.py
 import tkinter as tk
 from tkinter import ttk
-import hashlib
+from core.utils import hash_text
 
 class HasherPanel(ttk.Frame):
     def __init__(self, parent):
@@ -22,7 +22,7 @@ class HasherPanel(ttk.Frame):
     def hash_text(self):
         text = self.input_entry.get()
         if text:
-            result = hashlib.sha256(text.encode()).hexdigest()
+            result = hash_text(text)
             self.result_label.config(text=result)
         else:
             self.result_label.config(text="No input provided.")
