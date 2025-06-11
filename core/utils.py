@@ -21,6 +21,17 @@ def hash_file(file_path, method='sha256'):
             h.update(chunk)
     return h.hexdigest()
 
+# metadata utils
+def strip_metadata(src_path, dest_path):
+    """Copy file contents to a new file without preserving metadata."""
+    if not os.path.exists(src_path):
+        raise FileNotFoundError(f"File not found: {src_path}")
+
+    os.makedirs(os.path.dirname(dest_path) or '.', exist_ok=True)
+    with open(src_path, 'rb') as src, open(dest_path, 'wb') as dst:
+        for chunk in iter(lambda: src.read(8192), b''):
+            dst.write(chunk)
+
 # password defs 
 def get_password(length=12, use_chars=True, use_nums=True, use_specials=True):
     chars = ''
