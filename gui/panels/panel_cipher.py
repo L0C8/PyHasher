@@ -31,11 +31,30 @@ class CipherPanel(ttk.Frame):
         ttk.Entry(self, textvariable=self.pass_var, show="*").grid(row=1, column=1, columnspan=2, sticky="ew")
 
         ttk.Label(self, text="Input:").grid(row=2, column=0, padx=10, pady=5)
-        self.input_text = tk.Text(self, height=4, width=40)
+
+        style = ttk.Style()
+        text_bg = style.lookup("TEntry", "fieldbackground")
+        text_fg = style.lookup("TEntry", "foreground")
+
+        self.input_text = tk.Text(
+            self,
+            height=4,
+            width=40,
+            bg=text_bg,
+            fg=text_fg,
+            insertbackground=text_fg,
+        )
         self.input_text.grid(row=2, column=1, columnspan=2, pady=5, sticky="ew")
 
         ttk.Label(self, text="Output:").grid(row=3, column=0, padx=10, pady=5)
-        self.output_text = tk.Text(self, height=4, width=40)
+        self.output_text = tk.Text(
+            self,
+            height=4,
+            width=40,
+            bg=text_bg,
+            fg=text_fg,
+            insertbackground=text_fg,
+        )
         self.output_text.grid(row=3, column=1, columnspan=2, pady=5, sticky="ew")
 
         ttk.Button(self, text="Encrypt", command=self.encrypt).grid(row=4, column=1, pady=5)
