@@ -66,8 +66,9 @@ class PyHashGUI:
         cipher_tab = CipherPanel(self.notebook)
         self.notebook.add(cipher_tab, text="Cipher")
 
-        strip_tab = StripMetaPanel(self.notebook)
-        self.notebook.add(strip_tab, text="Metadata")
+        # on hold
+        # strip_tab = StripMetaPanel(self.notebook)
+        # self.notebook.add(strip_tab, text="Metadata")
 
         settings_tab = SettingsPanel(self.notebook, self.apply_theme)
         self.notebook.add(settings_tab, text="Settings")
