@@ -3,7 +3,7 @@ import os
 import random
 import string
 from configparser import ConfigParser
-
+import struct
 
 # hash defs 
 def hash_text(text, method='sha256'):
@@ -23,14 +23,6 @@ def hash_file(file_path, method='sha256'):
 
 # metadata utils
 def strip_metadata(src_path, dest_path):
-    """Copy file contents to a new file without preserving metadata.
-
-    The function attempts to remove all metadata from common image formats.
-    PNG files are processed even when Pillow isn't installed by stripping any
-    non-essential chunks. For other image formats, Pillow is used when
-    available to re-save the image without EXIF or ancillary info. Files that
-    cannot be processed as images are copied byte-for-byte.
-    """
     if not os.path.exists(src_path):
         raise FileNotFoundError(f"File not found: {src_path}")
 
@@ -69,9 +61,6 @@ def strip_metadata(src_path, dest_path):
 
 
 def _strip_png(src_path, dest_path):
-    """Remove metadata from a PNG without Pillow."""
-    import struct
-
     keep = {
         b'IHDR', b'PLTE', b'IDAT', b'IEND', b'tRNS', b'gAMA',
         b'cHRM', b'sBIT', b'bKGD', b'pHYs', b'sRGB', b'hIST',
