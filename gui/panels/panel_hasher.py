@@ -10,6 +10,8 @@ class HasherPanel(ttk.Frame):
         self.setup_ui()
 
     def setup_ui(self):
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
 
         ttk.Label(self, text="Hash Method:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
 
