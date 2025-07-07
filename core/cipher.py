@@ -74,7 +74,9 @@ class DESCipher:
 
     @staticmethod
     def encrypt(plaintext, key):
-        key = key[:8].ljust(8, b'0')
+        if len(key) != 24:
+            raise ValueError("Triple DES key must be 24 bytes long.")
+
         iv = os.urandom(8)
         cipher = Cipher(algorithms.TripleDES(key), modes.CBC(iv), backend=DESCipher.backend)
         encryptor = cipher.encryptor()
@@ -87,7 +89,9 @@ class DESCipher:
 
     @staticmethod
     def decrypt(encrypted_text, key):
-        key = key[:8].ljust(8, b'0')
+        if len(key) != 24:
+            raise ValueError("Triple DES key must be 24 bytes long.")
+
         encrypted_data = base64.b64decode(encrypted_text)
         iv = encrypted_data[:8]
         ciphertext = encrypted_data[8:]
@@ -106,8 +110,8 @@ class DESCipherPass:
 
     @staticmethod
     def set_key(password):
-        sha1 = hashlib.sha1(password.encode())
-        return sha1.digest()[:8]
+        sha1 = hashlib.sha1(password.encode()).digest()
+        return (sha1 + sha1)[:24]  # Make 24-byte key for TripleDES
 
     @staticmethod
     def encrypt(plaintext, password):
