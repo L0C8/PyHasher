@@ -4,6 +4,7 @@ import random
 import string
 from configparser import ConfigParser
 import struct
+import base64
 
 # hash defs 
 def hash_text(text, method='sha256'):
@@ -21,6 +22,18 @@ def hash_file(file_path, method='sha256'):
             h.update(chunk)
     return h.hexdigest()
 
+# cipher
+def randomize_key(alg_name: str) -> str:
+    if "Password" in alg_name:
+        # Return 8-char random password
+        return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    elif alg_name == "AES":
+        return base64.b64encode(os.urandom(16)).decode() 
+    elif alg_name == "DES":
+        return base64.b64encode(os.urandom(8)).decode()
+    else:
+        return ""
+    
 # metadata utils
 def strip_metadata(src_path, dest_path):
     if not os.path.exists(src_path):

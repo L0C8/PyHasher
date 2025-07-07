@@ -1,6 +1,8 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
+from Crypto.Cipher import DES
+from Crypto.Util.Padding import pad, unpad
 import hashlib, base64, os
 
 class AESCipher:
@@ -70,40 +72,32 @@ class AESCipherPass:
             return f"Error decrypting: {e}"
 
 class DESCipher:
-    backend = default_backend()
-
     @staticmethod
     def encrypt(plaintext, key):
-        if len(key) != 24:
-            raise ValueError("Triple DES key must be 24 bytes long.")
+        if isinstance(key, str):
+            key = key.encode()
 
-        iv = os.urandom(8)
-        cipher = Cipher(algorithms.TripleDES(key), modes.CBC(iv), backend=DESCipher.backend)
-        encryptor = cipher.encryptor()
+        if len(key) != 8:
+            raise ValueError("DES key must be exactly 8 bytes long.")
 
-        padder = padding.PKCS7(algorithms.TripleDES.block_size).padder()
-        padded_data = padder.update(plaintext.encode()) + padder.finalize()
-
-        ciphertext = encryptor.update(padded_data) + encryptor.finalize()
-        return base64.b64encode(iv + ciphertext).decode()
+        cipher = DES.new(key, DES.MODE_CBC)
+        ct_bytes = cipher.encrypt(pad(plaintext.encode(), DES.block_size))
+        return base64.b64encode(cipher.iv + ct_bytes).decode()
 
     @staticmethod
     def decrypt(encrypted_text, key):
-        if len(key) != 24:
-            raise ValueError("Triple DES key must be 24 bytes long.")
+        if isinstance(key, str):
+            key = key.encode()
 
-        encrypted_data = base64.b64decode(encrypted_text)
-        iv = encrypted_data[:8]
-        ciphertext = encrypted_data[8:]
+        if len(key) != 8:
+            raise ValueError("DES key must be exactly 8 bytes long.")
 
-        cipher = Cipher(algorithms.TripleDES(key), modes.CBC(iv), backend=DESCipher.backend)
-        decryptor = cipher.decryptor()
-
-        decrypted_padded = decryptor.update(ciphertext) + decryptor.finalize()
-        unpadder = padding.PKCS7(algorithms.TripleDES.block_size).unpadder()
-        decrypted_data = unpadder.update(decrypted_padded) + unpadder.finalize()
-
-        return decrypted_data.decode()
+        raw = base64.b64decode(encrypted_text)
+        iv = raw[:8]
+        ct = raw[8:]
+        cipher = DES.new(key, DES.MODE_CBC, iv)
+        pt = unpad(cipher.decrypt(ct), DES.block_size)
+        return pt.decode()
 
 class DESCipherPass:
     backend = default_backend()
@@ -111,7 +105,7 @@ class DESCipherPass:
     @staticmethod
     def set_key(password):
         sha1 = hashlib.sha1(password.encode()).digest()
-        return (sha1 + sha1)[:24]  # Make 24-byte key for TripleDES
+        return (sha1 + sha1)[:24]
 
     @staticmethod
     def encrypt(plaintext, password):
