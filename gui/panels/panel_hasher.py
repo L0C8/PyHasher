@@ -1,4 +1,3 @@
-# panels/panel_hasher.py
 import tkinter as tk
 from tkinter import ttk, filedialog
 import hashlib
@@ -11,27 +10,31 @@ class HasherPanel(ttk.Frame):
         self.setup_ui()
 
     def setup_ui(self):
-        ttk.Label(self, text="Hash Method:").pack(pady=5)
+
+        ttk.Label(self, text="Hash Method:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
 
         methods = sorted(hashlib.algorithms_guaranteed)
         self.method_var = tk.StringVar(value="sha256")
         ttk.Combobox(
             self, textvariable=self.method_var, values=methods, state="readonly"
-        ).pack(pady=5)
+        ).grid(row=0, column=1, sticky="w", padx=5, pady=2)
 
-        ttk.Label(self, text="Enter text to hash:").pack(pady=5)
+        ttk.Label(self, text="Enter text to hash:").grid(row=1, column=0, columnspan=2, sticky="w", padx=5, pady=2)
 
-        self.input_entry = ttk.Entry(self, width=40)
-        self.input_entry.pack(pady=5)
+        self.input_entry = ttk.Entry(self, width=54)
+        self.input_entry.grid(row=2, column=0, columnspan=2, sticky="w", padx=5, pady=2)
 
-        ttk.Button(self, text="Hash Text", command=self.hash_text).pack(pady=5)
+        ttk.Button(self, text="Hash Text", command=self.hash_text).grid(row=3, column=0, columnspan=2, sticky="w", padx=5, pady=2)
 
-        ttk.Button(self, text="Hash File", command=self.hash_file_dialog).pack(pady=5)
+        ttk.Button(self, text="Hash File", command=self.hash_file_dialog).grid(row=3, column=1, columnspan=2, sticky="w", padx=5, pady=2)
 
-        self.result_box = ttk.Entry(self, width=64)
-        self.result_box.pack(pady=10, fill="x", padx=5)
+        self.result_box = ttk.Entry(self, width=54)
+        self.result_box.grid(row=5, column=0, columnspan=2, sticky="w", padx=5, pady=5)
 
-        ttk.Button(self, text="Copy", command=self.copy_hash).pack(pady=5)
+        ttk.Button(self, text="Copy", command=self.copy_hash).grid(row=6, column=0, columnspan=2, sticky="w", padx=5, pady=2)
+
+        ttk.Button(self, text="Clear", command=self.clear_hash).grid(row=6, column=1, columnspan=2, sticky="w", padx=5, pady=2)
+
 
     def hash_text(self):
         text = self.input_entry.get()
@@ -45,6 +48,9 @@ class HasherPanel(ttk.Frame):
     def hash_file_dialog(self):
         path = filedialog.askopenfilename()
         if path:
+            self.input_entry.delete(0, tk.END)
+            self.input_entry.insert(0, path)
+
             method = self.method_var.get()
             try:
                 result = hash_file(path, method)
@@ -61,3 +67,6 @@ class HasherPanel(ttk.Frame):
         if result:
             self.clipboard_clear()
             self.clipboard_append(result)
+
+    def clear_hash(self):
+        self.display_result("")
